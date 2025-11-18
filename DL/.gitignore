@@ -34,8 +34,6 @@ env/
 # ================================
 DL/datasets/
 DL/weights/
-DL/models/*.pth
-DL/models/*.onnx
 
 # Cached files
 *.cache
