@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Observation System - Emotion Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="live.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- NAVBAR -->
+        <header class="navbar">
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Classroom Observation</span>
+                <span class="subtitle">Real-time monitoring & analysis</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Trang Chủ</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Phân Tích</span>
+                </a>
+                <a href="ai_assistant.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>Trợ Lý AI</span>
+                </a>
+                <a href="live_video.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live Feed</span>
+                </a>
+                <a href="live.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live</span>
+                </a>
+                <a href="start_class.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Star Class</span>
+                </a>
+            </nav>
+            <div class="user-actions">
+                <a href="#" class="nav-item"><i class="fas fa-user-circle"></i> Tài Khoản</a>
+                <div class="theme-toggle"><i class="fas fa-sun"></i></div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="monitor-container">
+
+            <!-- LEFT CAMERA FEED -->
+            <section class="camera-section">
+                <h2><i class="fas fa-video"></i> Live Camera Feed</h2>
+                <div class="camera-box">
+                    <img src="https://via.placeholder.com/640x360?text=Live+Camera+Feed" alt="Camera feed">
+                    <div class="camera-controls">
+                        <button><i class="fas fa-play"></i></button>
+                        <button><i class="fas fa-stop"></i></button>
+                        <button><i class="fas fa-expand"></i></button>
+                        <button><i class="fas fa-cog"></i></button>
+                    </div>
+                </div>
+                <div class="capture-area">
+                    <button class="capture-btn"><i class="fas fa-camera"></i> Capture Emotion</button>
+                    <label class="auto-capture"><input type="checkbox"> Enable Auto-Capture</label>
+                </div>
+            </section>
+
+            <!-- RIGHT EMOTION SUMMARY -->
+            <aside class="emotion-sidebar">
+                <div class="emotion-card">
+                    <h3><i class="fas fa-chart-pie"></i> Emotion Summary</h3>
+                    <div class="emotion-chart">Biểu đồ cảm xúc (ChartJS / D3.js)</div>
+                </div>
+
+                <div class="emotion-card">
+                    <h3><i class="fas fa-user-friends"></i> Student Count</h3>
+                    <div class="student-count-chart">Biểu đồ số lượng học sinh</div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+</body>
+</html>

@@ -29,6 +29,11 @@ env/
 # Jupyter Notebook
 .ipynb_checkpoints/
 
+# ================================
+# Data / Models / AI Artifacts
+# ================================
+DeepLearning/datasets/
+DeepLearning/weights/
 
 # Cached files
 *.cache
@@ -44,23 +49,6 @@ train/
 detect/
 segment/
 classify/
-
-# Mediapipe cache
-mediapipe/
-
-# Roboflow cache
-roboflow/
-
-# ================================
-# Node / Frontend
-# ================================
-FE/node_modules/
-FE/dist/
-FE/.vite/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 
 
 # ================================
