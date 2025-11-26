@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Observation System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="navbar">
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Classroom Observation</span>
+                <span class="subtitle">Real-time monitoring & analysis</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Trang Chủ</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Phân Tích</span>
+                </a>
+                <a href="ai_assistant.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>Trợ Lý AI</span>
+                </a>
+                <a href="live_video.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live Feed</span>
+                </a>
+                <a href="live.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live</span>
+                </a>
+                <a href="start_class.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Star Class</span>
+                </a>
+            </nav>
+            <div class="user-actions">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Tài Khoản</span>
+                </a>
+                <div class="theme-toggle"><i class="fas fa-sun"></i></div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="camera-feeds">
+                <!-- Thẻ quan sát lớp học 1 -->
+                <div class="camera-card">
+                    <div class="video-placeholder">
+                        <img src="https://via.placeholder.com/350x200?text=Lop+10A1" alt="Video Feed Lớp 10A1">
+                        <span class="fps">FPS: 11</span>
+                    </div>
+                    <div class="card-footer">
+                        <h3 class="location-name">LỚP 10A1</h3>
+                        <div class="status-tags">
+                            <span class="tag tag-green"><i class="fas fa-user-check"></i> Điểm danh đầy đủ</span>
+                            <span class="tag tag-orange"><i class="fas fa-chalkboard"></i> Hoạt động nhóm</span>
+                        </div>
+                        <div class="class-details">
+                            <div class="detail-item">
+                                <i class="fas fa-user-graduate icon-blue"></i>
+                                <span class="label">Học sinh</span>
+                                <span class="count">30</span>
+                                <span class="activity">Thảo luận</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-book icon-green"></i>
+                                <span class="label">Nội dung</span>
+                                <span class="count">Bài tập Toán</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thẻ quan sát lớp học 2 -->
+                <div class="camera-card">
+                    <div class="video-placeholder">
+                        <img src="https://via.placeholder.com/350x200?text=Lop+10B1" alt="Video Feed Lớp 10B1">
+                        <span class="fps">FPS: 15</span>
+                    </div>
+                    <div class="card-footer">
+                        <h3 class="location-name">LỚP 10B1</h3>
+                        <div class="status-tags">
+                            <span class="tag tag-red"><i class="fas fa-user-times"></i> Vắng học sinh</span>
+                            <span class="tag tag-blue"><i class="fas fa-chalkboard"></i> Giảng dạy trực tiếp</span>
+                        </div>
+                        <div class="class-details">
+                            <div class="detail-item">
+                                <i class="fas fa-user-graduate icon-blue"></i>
+                                <span class="label">Học sinh</span>
+                                <span class="count">25</span>
+                                <span class="activity">Làm bài cá nhân</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-book icon-green"></i>
+                                <span class="label">Nội dung</span>
+                                <span class="count">Bài tập Văn</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thẻ quan sát lớp học 3 -->
+                <div class="camera-card">
+                    <div class="video-placeholder">
+                        <img src="https://via.placeholder.com/350x200?text=Lop+11A1" alt="Video Feed Lớp 11A1">
+                        <span class="fps">FPS: 12</span>
+                    </div>
+                    <div class="card-footer">
+                        <h3 class="location-name">LỚP 11A1</h3>
+                        <div class="status-tags">
+                            <span class="tag tag-green"><i class="fas fa-user-check"></i> Điểm danh đầy đủ</span>
+                            <span class="tag tag-orange"><i class="fas fa-chalkboard"></i> Thảo luận nhóm</span>
+                        </div>
+                        <div class="class-details">
+                            <div class="detail-item">
+                                <i class="fas fa-user-graduate icon-blue"></i>
+                                <span class="label">Học sinh</span>
+                                <span class="count">28</span>
+                                <span class="activity">Thuyết trình</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-book icon-green"></i>
+                                <span class="label">Nội dung</span>
+                                <span class="count">Bài tập Lý</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="summary-card">
+                    <h4 class="location-name-summary">Lớp 10A1</h4>
+                    <div class="status-tags-summary">
+                        <span class="tag tag-green">Điểm danh đầy đủ</span>
+                        <span class="tag tag-orange">Hoạt động nhóm</span>
+                    </div>
+                    <div class="class-count-summary">
+                        <i class="fas fa-user-graduate icon-blue"></i> 30 &nbsp; <i class="fas fa-book icon-green"></i> Bài tập Toán
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h4 class="location-name-summary">Lớp 10B1</h4>
+                    <div class="status-tags-summary">
+                        <span class="tag tag-red">Vắng học sinh</span>
+                        <span class="tag tag-blue">Giảng dạy trực tiếp</span>
+                    </div>
+                    <div class="class-count-summary">
+                        <i class="fas fa-user-graduate icon-blue"></i> 25 &nbsp; <i class="fas fa-book icon-green"></i> Bài tập Văn
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h4 class="location-name-summary">Lớp 11A1</h4>
+                    <div class="status-tags-summary">
+                        <span class="tag tag-green">Điểm danh đầy đủ</span>
+                        <span class="tag tag-orange">Thảo luận nhóm</span>
+                    </div>
+                    <div class="class-count-summary">
+                        <i class="fas fa-user-graduate icon-blue"></i> 28 &nbsp; <i class="fas fa-book icon-green"></i> Bài tập Lý
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+</body>
+</html>

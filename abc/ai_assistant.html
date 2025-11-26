@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic System - Trợ Lý AI</title>
+    <link rel="stylesheet" href="ai.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<div class="app-container">
+    <header class="navbar">
+        <div class="logo">
+            <i class="fas fa-cloud"></i>
+            <span>Smart Traffic System</span>
+            <span class="subtitle">Real-time monitoring & analysis</span>
+        </div>
+        <nav class="nav-links">
+                <a href="index.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Trang Chủ</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Phân Tích</span>
+                </a>
+                <a href="ai_assistant.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>Trợ Lý AI</span>
+                </a>
+                <a href="live_video.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live Feed</span>
+                </a>
+                <a href="live.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live</span>
+                </a>
+                <a href="start_class.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Star Class</span>
+                </a>
+            </nav>
+        <div class="user-actions">
+            <a href="#" class="nav-item"><i class="fas fa-user-circle"></i><span>Tài khoản</span></a>
+            <div class="theme-toggle"><i class="fas fa-sun"></i></div>
+        </div>
+    </header>
+
+    <main class="main-content ai-assistant-page">
+        <div class="chat-window">
+            <div class="chat-history" id="chatHistory">
+                <!-- Tin nhắn mặc định từ AI -->
+                <div class="message-container ai-container">
+                    <div class="chat-message ai-message">
+                        <p>Hiện tại, hệ thống xe có, hoặc bất kỳ thông tin nào về các tuyến đường đang được giám sát. Tôi có thể giúp gì cho bạn?</p>
+                        <span class="sender-info">AI</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <i class="fas fa-microphone input-icon"></i>
+                <input type="text" id="userQuestion" placeholder="Nhập câu hỏi...">
+                <i class="fas fa-paper-plane input-icon send-icon" id="sendBtn"></i>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const sendBtn = document.getElementById('sendBtn');
+    const userInput = document.getElementById('userQuestion');
+    const chatHistory = document.getElementById('chatHistory');
+
+    function addMessage(message, sender, isThinking=false) {
+        const msgContainer = document.createElement('div');
+        msgContainer.classList.add('message-container');
+        msgContainer.classList.add(sender === 'user' ? 'user-container' : 'ai-container');
+
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('chat-message');
+        msgDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+
+        if(isThinking){
+            msgDiv.innerHTML = `<p class="thinking">...</p><span class="sender-info">AI</span>`;
+        } else {
+            msgDiv.innerHTML = `<p>${message}</p><span class="sender-info">${sender === 'user' ? 'Bạn' : 'AI'}</span>`;
+        }
+
+        msgContainer.appendChild(msgDiv);
+        chatHistory.appendChild(msgContainer);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // auto scroll
+        return msgDiv; // trả về để update sau
+    }
+
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (text === '') return;
+
+        addMessage(text, 'user'); // Tin nhắn user
+        userInput.value = '';
+
+        // Tin nhắn AI đang suy nghĩ
+        const thinkingMsg = addMessage('', 'ai', true);
+
+        let dots = 0;
+        const interval = setInterval(() => {
+            dots = (dots + 1) % 4;
+            thinkingMsg.querySelector('.thinking').textContent = '.'.repeat(dots);
+        }, 500);
+
+        // Giả lập AI trả lời sau 2.5 giây
+        setTimeout(() => {
+            clearInterval(interval);
+            thinkingMsg.querySelector('.thinking').textContent = `AI: Tôi đã ghi nhận câu hỏi của bạn: "${text}"`;
+        }, 2500);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') sendMessage();
+    });
+</script>
+
+
+</body>
+</html>

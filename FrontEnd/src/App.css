@@ -1,0 +1,27 @@
+.app-switcher {
+  display: flex;
+  gap: 10px;
+  background: #0f172a;
+  padding: 12px 20px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.switch-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+
+.switch-btn:hover {
+  background: #1e293b;
+}
+
+.switch-btn.active {
+  background: #137fec;
+  color: white;
+  border-color: #137fec;
+}

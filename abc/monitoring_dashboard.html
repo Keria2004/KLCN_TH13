@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EmotionAnalytics - Real-Time Monitoring</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              display: ["Lexend", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        font-feature-settings: "liga";
+        -webkit-font-feature-settings: "liga";
+      }
+    </style>
+  </head>
+  <body class="font-display bg-background-light dark:bg-background-dark">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <div class="flex min-h-screen">
+        <aside
+          class="flex h-full min-h-screen flex-col justify-between bg-white dark:bg-[#1C2534] p-4 w-64 border-r border-gray-200 dark:border-gray-700/60 sticky top-0"
+        >
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3 p-2">
+              <div class="size-8 text-primary">
+                <svg
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    clip-rule="evenodd"
+                    d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z"
+                    fill="currentColor"
+                    fill-rule="evenodd"
+                  ></path>
+                  <path
+                    clip-rule="evenodd"
+                    d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z"
+                    fill="currentColor"
+                    fill-rule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+              <h2
+                class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]"
+              >
+                EmotionAnalytics
+              </h2>
+            </div>
+            <div class="flex flex-col gap-2 mt-4">
+              <a
+                class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 text-primary dark:text-white dark:bg-primary"
+                href="#"
+              >
+                <span
+                  class="material-symbols-outlined"
+                  style="font-variation-settings: 'FILL' 1"
+                  >dashboard</span
+                >
+                <p class="text-sm font-medium leading-normal">Dashboard</p>
+              </a>
+              <a
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-primary/20 hover:text-gray-900 dark:hover:text-white"
+                href="#"
+              >
+                <span class="material-symbols-outlined">group</span>
+                <p class="text-sm font-medium leading-normal">Student List</p>
+              </a>
+              <a
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-primary/20 hover:text-gray-900 dark:hover:text-white"
+                href="#"
+              >
+                <span class="material-symbols-outlined">assessment</span>
+                <p class="text-sm font-medium leading-normal">Reports</p>
+              </a>
+              <a
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-primary/20 hover:text-gray-900 dark:hover:text-white"
+                href="#"
+              >
+                <span class="material-symbols-outlined">settings</span>
+                <p class="text-sm font-medium leading-normal">Settings</p>
+              </a>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <a
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-primary/20 hover:text-gray-900 dark:hover:text-white"
+              href="#"
+            >
+              <span class="material-symbols-outlined">help</span>
+              <p class="text-sm font-medium leading-normal">Support</p>
+            </a>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col">
+          <header
+            class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-700/60 px-6 py-3 bg-white dark:bg-[#1C2534] sticky top-0 z-10"
+          >
+            <div class="flex items-center gap-8">
+              <h1
+                class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]"
+              >
+                Real-Time Monitoring
+              </h1>
+            </div>
+            <div class="flex flex-1 justify-end gap-4">
+              <div class="flex gap-2">
+                <button
+                  class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg size-10 bg-gray-100 dark:bg-[#101622] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-primary/20"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >notifications</span
+                  >
+                </button>
+                <button
+                  class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg size-10 bg-gray-100 dark:bg-[#101622] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-primary/20"
+                >
+                  <span class="material-symbols-outlined text-xl">help</span>
+                </button>
+              </div>
+              <div
+                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+                data-alt="User avatar"
+                style="
+                  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA3b_lFbBwPeDKLn0FSJUpluOgOuN9a-4KqIHefNckhwEFkIbmVHe-iDJqDubM1PCNnMpEDAVgQ2hM7g4tpV6t6TsWyXVsySgvCBdSGKsAOIEVqc_SyMGbMu8GEWuwmGQL0qTwlyuCPyakp6htreHb87-NyMhf1r0kv6RBfHH9f7tBD2bSjELOOGydcL_H9ypdzuCYk5SvPcLWs0yb1-m-14BooE_MTxfdpj3yCntNDLVLMliN-aAlx42UFZEIFYGVLuInk3aKBD-g');
+                "
+              ></div>
+            </div>
+          </header>
+          <main
+            class="flex-1 p-6 lg:p-8 bg-background-light dark:bg-background-dark"
+          >
+            <div class="w-full mx-auto">
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+                  <div
+                    class="p-6 bg-white dark:bg-[#1C2534] rounded-xl border border-gray-200 dark:border-gray-700/60"
+                  >
+                    <div
+                      class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4"
+                    >
+                      <h3
+                        class="text-lg font-semibold text-gray-900 dark:text-white"
+                      >
+                        Student Camera Feeds
+                      </h3>
+                      <div
+                        class="flex items-center gap-2 mt-2 sm:mt-0 text-gray-600 dark:text-gray-400 text-sm"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >videocam</span
+                        ><span>12 Students Connected</span>
+                      </div>
+                    </div>
+                    <div
+                      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                    >
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv9_rYejIgzxEHmiNlZcscYJtrfyM_L0uWRZTaMl885Q1K5fMcWZyJCnKSbfX_byf3fPHTPBc7r80e7sjZqKwbR3mTHJZe13am1nj79ff6b2cey2OMBGTmwNsQVBqYr44xo1K0jPMUREdy6_2TdI1YyotGgmbxWDCV16eBlEvoZW85I7M6zd6S2TnmIESMZk5hvvkwRZsqnf-XofjItuoQQjqxxiySUL-cSB__-C20nvoecyeQt2OEmoqWlO9cFScWzJvU-F6nT1g"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">Alex Morgan</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-green-500/80 inline-block"
+                          >
+                            Happy
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3b_lFbBwPeDKLn0FSJUpluOgOuN9a-4KqIHefNckhwEFkIbmVHe-iDJqDubM1PCNnMpEDAVgQ2hM7g4tpV6t6TsWyXVsySgvCBdSGKsAOIEVqc_SyMGbMu8GEWuwmGQL0qTwlyuCPyakp6htreHb87-NyMhf1r0kv6RBfHH9f7tBD2bSjELOOGydcL_H9ypdzuCYk5SvPcLWs0yb1-m-14BooE_MTxfdpj3yCntNDLVLMliN-aAlx42UFZEIFYGVLuInk3aKBD-g"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">Ben Carter</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-blue-500/80 inline-block"
+                          >
+                            Engaged
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTBF37ZuN-dyCu7ZHDxEEDMUADl1hy-Do3YHooCRRfiTGMplUcqm_hUId9mVrn36hYUC98Wsx1auqdLsb0cddSyIt9z55uOKEMSLDbibRKgjZS40WkF8RL8QW0H5b5HW_cFRkf_45xo3qY5YDv4695qMh4G0YiQpju7Mb3eobeREeUXcW9JB2RPQdG7U252R_tNaFiDQEevMbcSrxhwroN9-OjziKPICldsehMAk2pnFTLYdIDfVvCGXyMWFQJLFCWP---IE6Fyuc"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">Chloe Davis</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-yellow-500/80 inline-block"
+                          >
+                            Confused
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEKKfz8WnP5FVUqezlDU0EDqAMqeYzbrzK3pvy-mN5hnVW0Pglh8fbmB81HFODaBnO6VGCu-SJcXTtv2VfV8DEUq8ryiaBHeL0FfrHmELZhQi-WZ5iD6rzN0ENUD1olIcvujnDh_2m-mJHC-bn4NMCiBZZGpADLg1-Ho709Ods6rJQmlJNQG3lJCfeuU5dj_a_APGJVMF6ah80DA0mvrOVOU7X4w0kDpxJDTQPrOPEo3mhHI1qpZmGIt8PdTGp2GGSlEb4R48dioI"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">David Evans</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-gray-500/80 inline-block"
+                          >
+                            Neutral
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5NU7Adp4Cbzyo5L0u2PmUM9i39Ni1q-ClFDZF9dXJzQEtElSgoJjRkQPASPEpylu557A66hOLF3CqJFMWxeIaMg0cA6OQUWuR_w2lt53tbRLVqZG93qbr108uBMAQzSsBYdSvz-6_QtSAGHpZrcYKOZSwBvy7i6jOEv9iRc8PQ-40tmJQqU_s96wRHwQaYDvoEQhqkV8lcpRreQyt4MNrhPogpyi_VJMHdR_dxgfM2HItiBEW8135n7bHCofCyW_uAfdd7GccHPM"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">Eva Green</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-blue-500/80 inline-block"
+                          >
+                            Engaged
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        class="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                      >
+                        <img
+                          alt="Student camera feed"
+                          class="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE1lGVMM2XPqkecDdBshFZJT8ifHq-fGRhV0zhc78on0oJ7hy0bcAnzlsDZ5tdn6dlpb8AoUnBNc-ZmFruS0qTQDemcYdkXA_7vF-rKBL2oS1mzvp_N8uTrN-HT8C16X636rjdNYZ1vx8UmKz4GgK5gMzA-EGi5WTaLjf2ZM1Jc0eIen28xsSOyaFuD0HPZpuseeiU9CPriBUKFV5ZdtSk4ccjIovkHqz1yCN0URrc9w_IAo7MFoZ2v5Do1G8scsqSSR-l-K7rjNM"
+                        />
+                        <div
+                          class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                        ></div>
+                        <div
+                          class="absolute bottom-2 left-2 right-2 text-white"
+                        >
+                          <p class="font-bold text-sm">Frank Hill</p>
+                          <p
+                            class="text-xs px-1.5 py-0.5 mt-1 rounded-full bg-orange-500/80 inline-block"
+                          >
+                            Bored
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-6 bg-white dark:bg-[#1C2534] rounded-xl border border-gray-200 dark:border-gray-700/60"
+                  >
+                    <h3
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                    >
+                      Class Emotion Over Time
+                    </h3>
+                    <div
+                      class="w-full h-72 bg-gray-100 dark:bg-background-dark rounded-lg flex items-center justify-center"
+                    >
+                      <img
+                        alt="Real-time line chart showing class-wide emotion percentages. Engagement is high, Boredom and Confusion are low."
+                        class="w-full h-full object-contain"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBumzqxBAvIxwypSNudnJUAmuqS75ZjPImnk19QVqUGjXau2vpmxxVvcBQtBi5b_2uHlMTuIQ_wZPeIIoR4OGt44DmYgzrd0KUvTnIXAsMT5GwgP22egfgMBILKfm5jlX73afy52vgblVvKCx2oqo62L1NhwK5o3T-x7SJp6wYeeLni7Oii25JGSeEYF-VEcrlS8tGa-KgTrt4Ags2_fqD7ukHc2e0YXjGUjnbZlRZuc_UqResK58DlaNIzdrUhFtlBDnsnV8R6Xa8"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+                  <div
+                    class="p-6 bg-white dark:bg-[#1C2534] rounded-xl border border-gray-200 dark:border-gray-700/60"
+                  >
+                    <h3
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                    >
+                      Session Control
+                    </h3>
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <p class="text-gray-900 dark:text-white font-medium">
+                            Mathematics - Algebra II
+                          </p>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Class Period 3
+                          </p>
+                        </div>
+                        <div
+                          class="flex items-center gap-1.5 text-green-600 dark:text-green-400"
+                        >
+                          <div
+                            class="size-2 bg-current rounded-full animate-pulse"
+                          ></div>
+                          <span class="text-sm font-medium">LIVE</span>
+                        </div>
+                      </div>
+                      <div
+                        class="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"
+                      >
+                        <button
+                          class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-gray-100 dark:bg-gray-700/60 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] gap-2"
+                        >
+                          <span class="material-symbols-outlined text-lg"
+                            >pause</span
+                          ><span class="truncate">Pause</span>
+                        </button>
+                        <button
+                          class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-red-500 text-white text-sm font-bold leading-normal tracking-[0.015em] gap-2"
+                        >
+                          <span class="material-symbols-outlined text-lg"
+                            >stop</span
+                          ><span class="truncate">End Session</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-6 bg-orange-100 dark:bg-orange-900/40 rounded-xl border border-orange-200 dark:border-orange-800/60"
+                  >
+                    <div class="flex items-start gap-4">
+                      <div class="text-orange-500 dark:text-orange-400 mt-0.5">
+                        <span class="material-symbols-outlined text-3xl"
+                          >sentiment_dissatisfied</span
+                        >
+                      </div>
+                      <div>
+                        <h3
+                          class="text-lg font-semibold text-orange-900 dark:text-orange-200"
+                        >
+                          Boredom Alert
+                        </h3>
+                        <p
+                          class="text-sm text-orange-700 dark:text-orange-300 mt-1"
+                        >
+                          Class boredom levels have exceeded the 15% threshold.
+                          Consider a short break or a change in activity.
+                        </p>
+                        <div class="mt-3">
+                          <p
+                            class="text-sm font-medium text-orange-800 dark:text-orange-200"
+                          >
+                            Students showing boredom:
+                          </p>
+                          <ul
+                            class="text-xs text-orange-700 dark:text-orange-300 list-disc list-inside mt-1"
+                          >
+                            <li>Frank Hill</li>
+                            <li>Grace Lee</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-6 bg-white dark:bg-[#1C2534] rounded-xl border border-gray-200 dark:border-gray-700/60"
+                  >
+                    <h3
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                    >
+                      Privacy &amp; Security
+                    </h3>
+                    <div class="space-y-3">
+                      <div class="flex items-start gap-3">
+                        <span
+                          class="material-symbols-outlined text-primary mt-0.5 text-lg"
+                          >shield_lock</span
+                        >
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                          All data is encrypted end-to-end. Feeds are not
+                          recorded unless explicitly configured.
+                        </p>
+                      </div>
+                      <div class="flex items-start gap-3">
+                        <span
+                          class="material-symbols-outlined text-primary mt-0.5 text-lg"
+                          >visibility_off</span
+                        >
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                          Facial recognition data is processed on-device and
+                          anonymized for class-wide analytics.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

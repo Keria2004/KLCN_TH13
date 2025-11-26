@@ -1,0 +1,9 @@
+# ================================
+# FastAPI / Backend
+# ================================
+Backend/app/__pycache__/
+Backend/app/*.pyc
+Backend/app/logs/
+Backend/.env              # bảo mật
+*.db                 # sqlite db nếu có
+*.sqlite3
