@@ -33,12 +33,7 @@ class SessionCreate(SessionBase):
 
 class SessionResponse(SessionBase):
     id: int
-    status: str = "active"  # 'active' | 'closed'
     created_at: datetime
-    ended_at: datetime | None = None
-    duration_seconds: int | None = None
-    total_frames: int = 0
-    emotion_summary: dict | None = None
 
     class Config:
         from_attributes = True

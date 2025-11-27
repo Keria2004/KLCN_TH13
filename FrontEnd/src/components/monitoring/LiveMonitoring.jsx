@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import axios from "axios";
 import API_BASE_URL from "../../config/apiConfig";
 import "../../styles/LiveMonitoring.css";
-import EmotionBarChart from "./EmotionBarChart";
 
 const LiveMonitoring = ({ onAnalysisExport }) => {
   const videoRef = useRef(null);
@@ -297,19 +296,32 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
       );
 
       console.log("✅ Session saved to DB:", response.data);
+
+      // Save to localStorage for Analytics page
+      localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
+
       alert(
         `✅ Buổi học đã kết thúc!\n📊 Đã phân tích ${sessionTimeline.length} frame\n💾 Dữ liệu đã lưu vào CSDL\n🎥 Chuyển sang Analytics để xem chi tiết`
       );
+
+      // Redirect to Analytics
+      setTimeout(() => {
+        window.location.href = "/analytics";
+      }, 500);
     } catch (error) {
       console.error("❌ Error saving session to backend:", error.message);
+
+      // Save to localStorage anyway for offline access
+      localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
+
       alert(
         `⚠️ Lưu DB thất bại, nhưng dữ liệu vẫn hiển thị.\nLỗi: ${error.message}`
       );
-    }
 
-    // 2️⃣ Gửi tới parent component để hiển thị Analytics
-    if (onAnalysisExport) {
-      onAnalysisExport(sessionData);
+      // Still redirect to Analytics
+      setTimeout(() => {
+        window.location.href = "/analytics";
+      }, 500);
     }
 
     // Reset
@@ -431,48 +443,6 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
               </>
             )}
           </div>
-        </div>
-
-        {/* Chart Section */}
-        <div className="chart-section">
-          <div className="chart-header">
-            <h5>
-              <i className="fas fa-chart-bar"></i> Phân Tích Thời Gian Thực
-            </h5>
-            {sessionTimeline.length > 0 && (
-              <span className="badge bg-info">
-                {sessionTimeline.length} frames
-              </span>
-            )}
-          </div>
-
-          {sessionTimeline.length > 0 ? (
-            <div className="chart-content">
-              <EmotionBarChart emotionCounts={emotionCounts} />
-              <div className="emotion-summary">
-                <h6>📊 Thống Kê Cảm Xúc</h6>
-                <div className="summary-items">
-                  {Object.entries(emotionCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([emotion, count]) => (
-                      <div key={emotion} className="summary-item">
-                        <span
-                          className={`emotion-tag emotion-${emotion.toLowerCase()}`}
-                        >
-                          {emotion}
-                        </span>
-                        <span className="count">{count}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="chart-placeholder">
-              <i className="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-              <p>Bắt đầu nhận diện để xem biểu đồ</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

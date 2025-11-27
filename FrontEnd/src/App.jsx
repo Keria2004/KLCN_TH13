@@ -9,7 +9,6 @@ import {
 import HomePage from "./pages/HomePage";
 import MonitorPage from "./pages/MonitorPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import ReportPage from "./pages/ReportPage";
 import LoginPage from "./pages/LoginPage";
 
 // Hàm kiểm tra login
@@ -63,11 +62,6 @@ export default function App() {
                       Phân tích
                     </NavLink>
                   </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/report">
-                      Report
-                    </NavLink>
-                  </li>
 
                   {/* Logout button */}
                   <li className="nav-item">
@@ -116,14 +110,6 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AnalyticsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/report"
-              element={
-                <ProtectedRoute>
-                  <ReportPage />
                 </ProtectedRoute>
               }
             />

@@ -16,9 +16,7 @@ export default function HomePage() {
     async function loadRecent() {
       setLoadingRecent(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/sessions/recent_classes/`, {
-          timeout: 5000,
-        });
+        const res = await fetch(`${API_BASE_URL}/sessions/recent_classes`);
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         setRecentClasses(data.data || []);
@@ -62,7 +60,7 @@ export default function HomePage() {
       const token = localStorage.getItem("token");
       const teacherId = localStorage.getItem("teacher_id") || "1";
 
-      const res = await fetch(`${API_BASE_URL}/sessions/create/`, {
+      const res = await fetch(`${API_BASE_URL}/sessions/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

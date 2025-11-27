@@ -1,40 +1,9 @@
 import React, { useState } from "react";
 import LiveMonitoring from "../components/monitoring/LiveMonitoring";
 import VideoUpload from "../components/monitoring/VideoUpload";
-import AnalyticsDashboard from "../components/analytics/AnalyticsDashboard";
 
 const MonitorPage = () => {
   const [activeTab, setActiveTab] = useState("live");
-  const [analysisData, setAnalysisData] = useState(null);
-
-  const handleAnalysisComplete = (data) => {
-    setAnalysisData(data);
-    setActiveTab("analytics");
-  };
-
-  // For Live Monitoring to send analysis data to Analytics
-  const handleLiveAnalysisSubmit = (sessionData) => {
-    // Handle both old timeline format and new sessionData format
-    const analysisPayload = sessionData.timeline
-      ? {
-          session_id: sessionData.session_id,
-          start_time: sessionData.start_time,
-          end_time: sessionData.end_time,
-          duration: sessionData.duration,
-          frames_total: sessionData.total_frames,
-          frames_analyzed: sessionData.total_frames,
-          emotion_counts: sessionData.emotion_counts,
-          timeline: sessionData.timeline,
-        }
-      : {
-          frames_total: sessionData.length,
-          frames_analyzed: sessionData.length,
-          timeline: sessionData,
-        };
-
-    setAnalysisData(analysisPayload);
-    setActiveTab("analytics");
-  };
 
   return (
     <div className="monitor-page">
@@ -72,18 +41,6 @@ const MonitorPage = () => {
             Upload Video
           </button>
         </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${activeTab === "analytics" ? "active" : ""}`}
-            onClick={() => setActiveTab("analytics")}
-            type="button"
-            role="tab"
-            disabled={!analysisData}
-          >
-            <i className="fas fa-chart-bar me-2"></i>
-            Analytics
-          </button>
-        </li>
       </ul>
 
       {/* Tab Content */}
@@ -95,7 +52,7 @@ const MonitorPage = () => {
           }`}
           role="tabpanel"
         >
-          <LiveMonitoring onAnalysisExport={handleLiveAnalysisSubmit} />
+          <LiveMonitoring />
         </div>
 
         {/* Video Upload Tab */}
@@ -105,17 +62,7 @@ const MonitorPage = () => {
           }`}
           role="tabpanel"
         >
-          <VideoUpload onAnalysisComplete={handleAnalysisComplete} />
-        </div>
-
-        {/* Analytics Tab */}
-        <div
-          className={`tab-pane fade ${
-            activeTab === "analytics" ? "show active" : ""
-          }`}
-          role="tabpanel"
-        >
-          <AnalyticsDashboard analysisData={analysisData} />
+          <VideoUpload />
         </div>
       </div>
 

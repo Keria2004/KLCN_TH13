@@ -29,16 +29,10 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id = Column(BigInteger, primary_key=True)
-    teacher_id = Column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"))
+    teacher_id = Column(BigInteger)  # Removed ForeignKey for flexibility
     subject = Column(String, nullable=False)
-    status = Column(String, default="active")  # 'active' | 'closed'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    ended_at = Column(DateTime(timezone=True), nullable=True)
-    duration_seconds = Column(Integer, nullable=True)  # Tổng thời gian buổi học (giây)
-    total_frames = Column(Integer, default=0)  # Tổng frame phân tích
-    emotion_summary = Column(Text, nullable=True)  # JSON: {emotion: count}
 
-    teacher = relationship("User")
     readings = relationship("EmotionReading", cascade="all,delete")
     notes = relationship("SessionNotes", uselist=False, cascade="all,delete")
 

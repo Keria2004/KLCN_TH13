@@ -18,20 +18,24 @@ router = APIRouter(prefix="/sessions", tags=["Sessions"])
 
 @router.post("/create")
 def create_session(payload: SessionCreate, db: Session = Depends(get_db)):
-    new_session = SessionModel(
-        teacher_id=payload.teacher_id,
-        subject=payload.subject,
-    )
-    db.add(new_session)
-    db.commit()
-    db.refresh(new_session)
+    try:
+        new_session = SessionModel(
+            teacher_id=payload.teacher_id,
+            subject=payload.subject,
+        )
+        db.add(new_session)
+        db.commit()
+        db.refresh(new_session)
 
-    return {
-        "status": "success",
-        "session_id": new_session.id,
-        "subject": new_session.subject,
-        "teacher_id": new_session.teacher_id
-    }
+        return {
+            "status": "success",
+            "session_id": new_session.id,
+            "subject": new_session.subject,
+            "teacher_id": new_session.teacher_id
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error creating session: {str(e)}")
     
 
 
@@ -75,7 +79,7 @@ def get_recent_classes(db: Session = Depends(get_db), limit: int = 10):
         }
 
 
-@router.post("/end_session", response_model=SessionEndResponse)
+@router.post("/end_session")
 def end_session(payload: SessionEndRequest, db: Session = Depends(get_db)):
     """
     Kết thúc một buổi học và lưu dữ liệu phân tích.
@@ -90,27 +94,20 @@ def end_session(payload: SessionEndRequest, db: Session = Depends(get_db)):
     try:
         # Parse session_id từ string format "session_TIMESTAMP"
         if isinstance(payload.session_id, str):
-            # Lấy timestamp từ "session_1234567890" nếu có
-            # Nếu không, tạo mới
             session_id_str = payload.session_id
             # Try to find existing session or create new one
-            session = db.query(SessionModel).filter(
-                SessionModel.id == int(session_id_str.replace("session_", "")) if session_id_str.startswith("session_") else SessionModel.id == payload.session_id
-            ).first()
+            try:
+                session_id = int(session_id_str.replace("session_", "")) if session_id_str.startswith("session_") else int(payload.session_id)
+            except:
+                session_id = int(payload.session_id)
             
+            session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
             if not session:
                 raise HTTPException(status_code=404, detail="Session not found")
         else:
             session = db.query(SessionModel).filter(SessionModel.id == payload.session_id).first()
             if not session:
                 raise HTTPException(status_code=404, detail="Session not found")
-        
-        # Update session status
-        session.status = "closed"
-        session.ended_at = payload.end_time
-        session.duration_seconds = payload.duration
-        session.total_frames = len(payload.timeline)
-        session.emotion_summary = json.dumps(payload.emotion_counts)  # Lưu dưới dạng JSON
         
         # Add emotion readings từ timeline
         for frame_data in payload.timeline:
@@ -126,14 +123,13 @@ def end_session(payload: SessionEndRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(session)
         
-        return SessionEndResponse(
-            status="success",
-            message=f"Session {session.id} ended successfully",
-            session_id=session.id,
-            total_frames=session.total_frames,
-            emotion_summary=payload.emotion_counts,
-            ended_at=session.ended_at
-        )
+        return {
+            "status": "success",
+            "message": f"Session {session.id} ended successfully",
+            "session_id": session.id,
+            "total_frames": len(payload.timeline),
+            "emotion_summary": payload.emotion_counts
+        }
         
     except HTTPException:
         raise
