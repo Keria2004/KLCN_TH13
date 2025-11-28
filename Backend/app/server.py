@@ -26,7 +26,8 @@ from app.routers import (
     note_router,
     report_router,
     monitoring_router,
-    login_router
+    login_router,
+    register_router
 )
 
 app.include_router(user_router.router)
@@ -36,3 +37,4 @@ app.include_router(note_router.router)
 app.include_router(report_router.router)
 app.include_router(monitoring_router.router)
 app.include_router(login_router.router)
+app.include_router(register_router.router)

@@ -3,16 +3,23 @@ import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 
 const DEFAULT_LABELS = [
-  "Happy",
-  "Sad",
-  "Angry",
-  "Surprise",
-  "Neutral",
-  "Disgust",
-  "Fear",
+  "Vui vẻ",
+  "Buồn",
+  "Giận dữ",
+  "Ngạc nhiên",
+  "Bình thường",
+  "Ghê tởm",
+  "Sợ hãi",
 ];
 
 const EMOTION_COLORS = {
+  "Vui vẻ": "rgba(40, 167, 69, 0.7)",
+  Buồn: "rgba(0, 123, 255, 0.7)",
+  "Giận dữ": "rgba(220, 53, 69, 0.7)",
+  "Ngạc nhiên": "rgba(255, 193, 7, 0.7)",
+  "Bình thường": "rgba(108, 117, 125, 0.7)",
+  "Ghê tởm": "rgba(232, 62, 140, 0.7)",
+  "Sợ hãi": "rgba(253, 126, 20, 0.7)",
   Happy: "rgba(40, 167, 69, 0.7)",
   Sad: "rgba(0, 123, 255, 0.7)",
   Angry: "rgba(220, 53, 69, 0.7)",
@@ -70,7 +77,7 @@ export default function EmotionBarChart({ data = [], emotionCounts = {} }) {
         labels,
         datasets: [
           {
-            label: "Emotion Count",
+            label: "Số Lần Cảm Xúc",
             data: datasetData,
             backgroundColor: colors,
             borderColor: colors.map((c) => c.replace("0.7", "1")),

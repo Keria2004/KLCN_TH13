@@ -16,8 +16,8 @@ export default function CameraBox({
     videoSource === "camera"
       ? "Camera"
       : videoSource === "file"
-      ? "Video File"
-      : "Idle";
+      ? "Tệp Video"
+      : "Rảnh";
 
   return (
     <div>
@@ -55,10 +55,10 @@ export default function CameraBox({
           onClick={onUseCamera}
         >
           <i className="fas fa-plug me-1"></i>
-          Connect Camera
+          Kết Nối Camera
         </button>
 
-        {/* UPLOAD VIDEO */}
+        {/* TẢI VIDEO */}
         <button
           type="button"
           className={`btn btn-sm ${
@@ -67,7 +67,7 @@ export default function CameraBox({
           onClick={() => fileInputRef.current?.click()}
         >
           <i className="fas fa-upload me-1"></i>
-          Upload Video
+          Tải Video
         </button>
 
         <input
@@ -79,7 +79,7 @@ export default function CameraBox({
           onChange={onUploadVideo}
         />
 
-        {/* STOP */}
+        {/* DỪNG */}
         {isCameraActive && (
           <button
             type="button"
@@ -87,7 +87,7 @@ export default function CameraBox({
             onClick={onStopStream}
           >
             <i className="fas fa-stop-circle me-1"></i>
-            Stop
+            Dừng
           </button>
         )}
       </div>

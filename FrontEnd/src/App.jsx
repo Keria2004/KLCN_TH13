@@ -49,7 +49,7 @@ export default function App() {
                 <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                   <li className="nav-item">
                     <NavLink className="nav-link" to="/">
-                      Home
+                      Trang Chủ
                     </NavLink>
                   </li>
                   <li className="nav-item">
@@ -73,7 +73,7 @@ export default function App() {
                       }}
                     >
                       <i className="fas fa-sign-out-alt me-2"></i>
-                      Logout
+                      Đăng Xuất
                     </button>
                   </li>
                 </ul>
@@ -120,7 +120,7 @@ export default function App() {
         {isLoggedIn() && (
           <footer className="bg-white border-top py-3 mt-4">
             <div className="container text-center text-muted small">
-              Smart Classroom &copy; {new Date().getFullYear()}
+              Lớp Học Thông Minh &copy; {new Date().getFullYear()}
             </div>
           </footer>
         )}

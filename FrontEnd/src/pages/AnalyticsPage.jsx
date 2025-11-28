@@ -5,6 +5,16 @@ import EmotionBarBox from "../components/monitoring/EmotionBarBox";
 import EmotionOverTimeBox from "../components/monitoring/EmotionOverTimeBox";
 import jsPDF from "jspdf";
 
+// 🔇 Ẩn axios error notifications
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Chỉ log error, không hiển thị alert
+    console.error("API Error:", error.response?.status, error.message);
+    return Promise.reject(error);
+  }
+);
+
 export default function AnalyticsPage() {
   // Main state
   const [data, setData] = useState({
@@ -43,6 +53,28 @@ export default function AnalyticsPage() {
         console.error("Error loading session data:", e);
       }
     }
+
+    // 🔄 Kiểm tra sessionsList từ localStorage (cập nhật từ Monitor)
+    const sessionsListStr = localStorage.getItem("sessionsList");
+    if (sessionsListStr) {
+      try {
+        const sessionsList = JSON.parse(sessionsListStr);
+        console.log(
+          "📚 Using updated sessions list from localStorage:",
+          sessionsList
+        );
+        setData((prev) => ({
+          ...prev,
+          sessions: sessionsList,
+        }));
+        localStorage.removeItem("sessionsList");
+        return; // Dừng tại đây, không cần fetch từ API
+      } catch (e) {
+        console.warn("Error parsing sessionsList:", e);
+      }
+    }
+
+    // Nếu không có sessionsList, fetch từ API
     loadRecentSessions();
   }, []);
 
@@ -50,19 +82,28 @@ export default function AnalyticsPage() {
   const processSessionData = (sessionData) => {
     if (sessionData.emotion_counts) {
       const emotions = [
-        "Happy",
-        "Sad",
-        "Angry",
-        "Surprise",
-        "Neutral",
-        "Disgust",
-        "Fear",
+        "Vui vẻ",
+        "Buồn",
+        "Giận dữ",
+        "Ngạc nhiên",
+        "Bình thường",
+        "Ghê tởm",
+        "Sợ hãi",
       ];
       const counts = emotions.map((e) => sessionData.emotion_counts[e] || 0);
       setBarData(counts);
 
-      const maxEmotion = emotions[counts.indexOf(Math.max(...counts))];
-      setDominantEmotion(maxEmotion || "Neutral");
+      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có count cao nhất, loại bỏ 'Bình thường'
+      let maxIdx = 0;
+      let maxCount = -1;
+      counts.forEach((count, idx) => {
+        if (emotions[idx] !== "Bình thường" && count > maxCount) {
+          maxCount = count;
+          maxIdx = idx;
+        }
+      });
+      const maxEmotion = maxCount > 0 ? emotions[maxIdx] : "Bình thường";
+      setDominantEmotion(maxEmotion);
 
       const lineChartData = counts.map((_, idx) => Math.random() * 100);
       setLineData(lineChartData);
@@ -75,8 +116,6 @@ export default function AnalyticsPage() {
       setStats({
         engagement: Math.round(positiveRate),
         positive: Math.round(positiveRate),
-        attention: Math.round(75 + Math.random() * 25),
-        stress: Math.round(Math.max(0, 100 - positiveRate)),
       });
 
       setData((prev) => ({
@@ -109,6 +148,7 @@ export default function AnalyticsPage() {
     } catch (error) {
       console.error("Error loading sessions:", error);
       setData((prev) => ({ ...prev, loading: false }));
+      // Ẩn alert lỗi - chỉ log ra console
     }
   };
 
@@ -121,7 +161,12 @@ export default function AnalyticsPage() {
 
       if (session.emotion_summary) {
         try {
-          const emotionData = JSON.parse(session.emotion_summary);
+          let emotionData = session.emotion_summary;
+          // If it's a string, parse it; if it's already an object, use it directly
+          if (typeof emotionData === "string") {
+            emotionData = JSON.parse(emotionData);
+          }
+
           processSessionData({
             emotion_counts: emotionData,
             session_id: session.id,
@@ -152,7 +197,7 @@ export default function AnalyticsPage() {
 
       doc.setFontSize(18);
       doc.setTextColor(13, 110, 253);
-      doc.text("📊 CLASS ANALYTICS REPORT", pageWidth / 2, yPos, {
+      doc.text("📊 BÁO CÁO PHÂN TÍCH LỚP HỌC", pageWidth / 2, yPos, {
         align: "center",
       });
       yPos += 12;
@@ -160,7 +205,7 @@ export default function AnalyticsPage() {
       doc.setFontSize(10);
       doc.setTextColor(100);
       doc.text(
-        `Generated: ${new Date().toLocaleString()}`,
+        `Được tạo: ${new Date().toLocaleString()}`,
         pageWidth / 2,
         yPos,
         { align: "center" }
@@ -170,13 +215,13 @@ export default function AnalyticsPage() {
       // Session Info
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text("SESSION INFORMATION", 15, yPos);
+      doc.text("THÔNG TIN BUỔI HỌC", 15, yPos);
       yPos += 8;
       doc.setFontSize(10);
-      doc.text(`Subject: ${data.selectedSession?.subject || "N/A"}`, 20, yPos);
+      doc.text(`Môn Học: ${data.selectedSession?.subject || "N/A"}`, 20, yPos);
       yPos += 6;
       doc.text(
-        `Date: ${new Date(data.selectedSession?.created_at).toLocaleDateString(
+        `Ngày: ${new Date(data.selectedSession?.created_at).toLocaleDateString(
           "vi-VN"
         )}`,
         20,
@@ -187,18 +232,18 @@ export default function AnalyticsPage() {
       // Emotion Statistics
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text("EMOTION STATISTICS", 15, yPos);
+      doc.text("THỐNG KÊ CẢM XÚC", 15, yPos);
       yPos += 8;
       doc.setFontSize(10);
 
       const emotions = [
-        "Happy",
-        "Sad",
-        "Angry",
-        "Surprise",
-        "Neutral",
-        "Disgust",
-        "Fear",
+        "Vui vẻ",
+        "Buồn",
+        "Giận dữ",
+        "Ngạc nhiên",
+        "Bình thường",
+        "Ghê tởm",
+        "Sợ hãi",
       ];
       const totalFrames = barData.reduce((a, b) => a + b, 0) || 1;
 
@@ -214,18 +259,15 @@ export default function AnalyticsPage() {
       // Performance Metrics
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text("PERFORMANCE METRICS", 15, yPos);
+      doc.text("CHỈ SỐ HIỆU SUẤT", 15, yPos);
       yPos += 8;
       doc.setFontSize(10);
 
-      doc.text(`Engagement: ${stats.engagement}%`, 20, yPos);
+      doc.text(`Mức độ hứng thú: ${stats.engagement}%`, 20, yPos);
       yPos += 6;
-      doc.text(`Tỷ lệ Chán nản: ${100 - stats.positive}%`, 20, yPos);
+      doc.text(`Tỷ lệ tích cực: ${stats.positive}%`, 20, yPos);
       yPos += 6;
-      doc.text(`Attention: ${stats.attention}%`, 20, yPos);
-      yPos += 6;
-      doc.text(`Dominant Emotion: ${dominantEmotion}`, 20, yPos);
-
+      doc.text(`Cảm xúc chủ đạo: ${dominantEmotion}`, 20, yPos);
       doc.save(
         `Class_Analytics_${data.selectedSession?.id}_${
           new Date().toISOString().split("T")[0]
@@ -260,30 +302,29 @@ export default function AnalyticsPage() {
         "Fear",
       ];
 
-      let csv = "Class Analytics Report\n";
-      csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+      let csv = "Báo Cáo Phân Tích Lớp Học\n";
+      csv += `Tạo: ${new Date().toLocaleString()}\n\n`;
 
-      csv += "SESSION INFORMATION\n";
-      csv += `Subject,${data.selectedSession?.subject || "N/A"}\n`;
-      csv += `Teacher ID,${data.selectedSession?.teacher_id || "N/A"}\n`;
+      csv += "THÔNG TIN BUỔI HỌC\n";
+      csv += `Môn Học,${data.selectedSession?.subject || "N/A"}\n`;
+      csv += `ID Giáo Viên,${data.selectedSession?.teacher_id || "N/A"}\n`;
       csv += `Date,${new Date(
         data.selectedSession?.created_at
       ).toLocaleDateString("vi-VN")}\n\n`;
 
-      csv += "EMOTION STATISTICS\n";
-      csv += "Emotion,Count,Percentage\n";
+      csv += "THỐNG KÊ CẢM XÚC\n";
+      csv += "Cảm Xúc,Số Lượng,Tỷ Lệ\n";
       const totalFrames = barData.reduce((a, b) => a + b, 0) || 1;
       emotions.forEach((emotion, idx) => {
         const percentage = ((barData[idx] / totalFrames) * 100).toFixed(1);
         csv += `${emotion},${barData[idx] || 0},${percentage}%\n`;
       });
 
-      csv += "\nPERFORMANCE METRICS\n";
-      csv += "Metric,Value\n";
-      csv += `Engagement,${stats.engagement}%\n`;
-      csv += `Tỷ lệ Chán nản,${100 - stats.positive}%\n`;
-      csv += `Attention,${stats.attention}%\n`;
-      csv += `Dominant Emotion,${dominantEmotion}\n`;
+      csv += "\nCHỈ SỐ HIỆU SUẤT\n";
+      csv += "Chỉ Số,Giá Trị\n";
+      csv += `Mức độ hứng thú,${stats.engagement}%\n`;
+      csv += `Tỷ lệ tích cực,${stats.positive}%\n`;
+      csv += `Cảm xúc chủ đạo,${dominantEmotion}\n`;
 
       const blob = new Blob([csv], { type: "text/csv" });
       const url = window.URL.createObjectURL(blob);
@@ -314,19 +355,19 @@ export default function AnalyticsPage() {
     setExporting(true);
     try {
       const emotions = [
-        "Happy",
-        "Sad",
-        "Angry",
-        "Surprise",
-        "Neutral",
-        "Disgust",
-        "Fear",
+        "Vui vẻ",
+        "Buồn",
+        "Giận dữ",
+        "Ngạc nhiên",
+        "Bình thường",
+        "Ghê tởm",
+        "Sợ hãi",
       ];
 
       const reportData = {
-        report_type: "Class Analytics Report",
-        generated_at: new Date().toISOString(),
-        session: {
+        loai_bao_cao: "Báo Cáo Phân Tích Lớp Học",
+        tao_luc: new Date().toISOString(),
+        buoi_hoc: {
           id: data.selectedSession?.id,
           subject: data.selectedSession?.subject,
           teacher_id: data.selectedSession?.teacher_id,
@@ -337,11 +378,9 @@ export default function AnalyticsPage() {
           return acc;
         }, {}),
         metrics: {
-          engagement: stats.engagement,
-          positive_rate: stats.positive,
-          attention: stats.attention,
-          stress_level: stats.stress,
-          dominant_emotion: dominantEmotion,
+          muc_do_hung_thu: stats.engagement,
+          ty_le_tich_cuc: stats.positive,
+          cam_xuc_chu_dao: dominantEmotion,
         },
       };
 
@@ -356,10 +395,10 @@ export default function AnalyticsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
 
-      alert("✅ JSON exported successfully!");
+      alert("✅ Đã xuất JSON thành công!");
     } catch (error) {
       console.error("Error exporting JSON:", error);
-      alert("❌ Error exporting JSON");
+      alert("❌ Lỗi khi xuất JSON");
     } finally {
       setExporting(false);
     }
@@ -466,22 +505,42 @@ export default function AnalyticsPage() {
   // Helper: Enrich sessions
   const enrichSessions = (sessions) => {
     return sessions.map((session) => {
-      const emotionSummary = session.emotion_summary
-        ? JSON.parse(session.emotion_summary)
-        : {};
+      let emotionSummary = {};
+
+      // Handle emotion_summary - could be string, object, or null
+      if (session.emotion_summary) {
+        if (typeof session.emotion_summary === "string") {
+          try {
+            emotionSummary = JSON.parse(session.emotion_summary);
+          } catch (e) {
+            console.warn("Failed to parse emotion_summary string:", e);
+            emotionSummary = {};
+          }
+        } else if (typeof session.emotion_summary === "object") {
+          emotionSummary = session.emotion_summary;
+        }
+      }
 
       const emotions = [
-        "Happy",
-        "Sad",
-        "Angry",
-        "Surprise",
-        "Neutral",
-        "Disgust",
-        "Fear",
+        "Vui vẻ",
+        "Buồn",
+        "Giận dữ",
+        "Ngạc nhiên",
+        "Bình thường",
+        "Ghê tởm",
+        "Sợ hãi",
       ];
       const counts = emotions.map((e) => emotionSummary[e] || 0);
-      const maxIdx = counts.indexOf(Math.max(...counts));
-      const dominantEmotion = emotions[maxIdx] || "Neutral";
+      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có count cao nhất, loại bỏ 'Bình thường'
+      let maxIdx = 0;
+      let maxCount = -1;
+      counts.forEach((count, idx) => {
+        if (emotions[idx] !== "Bình thường" && count > maxCount) {
+          maxCount = count;
+          maxIdx = idx;
+        }
+      });
+      const dominantEmotion = maxCount > 0 ? emotions[maxIdx] : "Bình thường";
 
       const totalCount = counts.reduce((a, b) => a + b, 0) || 1;
       const positiveCount =
@@ -500,6 +559,13 @@ export default function AnalyticsPage() {
   // Helper: Get emotion badge color
   const getEmotionBadgeColor = (emotion) => {
     const colors = {
+      "Vui vẻ": "bg-success",
+      Buồn: "bg-primary",
+      "Giận dữ": "bg-danger",
+      "Ngạc nhiên": "bg-warning",
+      "Bình thường": "bg-secondary",
+      "Ghê tởm": "bg-info",
+      "Sợ hãi": "bg-orange",
       Happy: "bg-success",
       Sad: "bg-primary",
       Angry: "bg-danger",
@@ -526,86 +592,172 @@ export default function AnalyticsPage() {
   );
 
   return (
-    <div className="row mt-4">
-      {/* Breadcrumb */}
-      <div className="col-md-12">
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
+    <div className="min-vh-100" style={{ background: "#f8f9fa" }}>
+      {/* Header Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          padding: "40px 20px",
+        }}
+      >
+        <div className="container">
+          <h1 className="display-6 fw-bold mb-2">
+            <i className="fas fa-chart-line me-2"></i>Phân Tích & Báo Cáo Cảm
+            Xúc
+          </h1>
+          <p className="lead mb-0" style={{ opacity: 0.9 }}>
+            Thống kê chi tiết và báo cáo về cảm xúc lớp học
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container py-4">
+        {/* Breadcrumb */}
+        <nav aria-label="breadcrumb" className="mb-4">
+          <ol
+            className="breadcrumb"
+            style={{ background: "transparent", padding: 0 }}
+          >
             <li className="breadcrumb-item">
-              <a href="/">Home</a>
+              <a href="/" style={{ color: "#667eea" }}>
+                Trang Chủ
+              </a>
             </li>
             <li className="breadcrumb-item">
-              <a href="/monitor">Class</a>
+              <a href="/monitor" style={{ color: "#667eea" }}>
+                Giám Sát
+              </a>
             </li>
-            <li className="breadcrumb-item active" aria-current="page">
-              Analytics & Reports
+            <li className="breadcrumb-item active" style={{ color: "#764ba2" }}>
+              Phân Tích & Báo Cáo
             </li>
           </ol>
         </nav>
-      </div>
 
-      {/* Main Card with Tabs */}
-      <div className="col-md-12">
-        <div className="card mb-4">
-          <div className="card-header bg-primary text-white">
+        {/* Main Card with Tabs */}
+        <div
+          className="card shadow-sm border-0"
+          style={{ borderRadius: "12px", overflow: "hidden" }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              padding: "20px",
+            }}
+          >
             <h4 className="mb-0">
-              <i className="fas fa-chart-line me-2"></i>Analytics & Reports
+              <i className="fas fa-chart-bar me-2"></i>Phân Tích & Báo Cáo
             </h4>
           </div>
 
           {/* Tabs */}
-          <ul className="nav nav-tabs" role="tablist">
+          <ul
+            className="nav nav-pills nav-fill gap-2 p-3 mb-0"
+            role="tablist"
+            style={{ background: "#f8f9fa", borderBottom: "1px solid #e0e0e0" }}
+          >
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${activeTab === "charts" ? "active" : ""}`}
+                className={`nav-link fw-bold py-2 ${
+                  activeTab === "charts" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("charts")}
                 type="button"
+                style={{
+                  borderRadius: "8px",
+                  color: activeTab === "charts" ? "white" : "#667eea",
+                  background:
+                    activeTab === "charts"
+                      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      : "transparent",
+                  border: "none",
+                  transition: "all 0.3s",
+                }}
               >
-                <i className="fas fa-chart-bar me-1"></i>Biểu đồ
+                <i className="fas fa-chart-bar me-2"></i>Biểu Đồ
               </button>
             </li>
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${activeTab === "table" ? "active" : ""}`}
+                className={`nav-link fw-bold py-2 ${
+                  activeTab === "table" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("table")}
                 type="button"
+                style={{
+                  borderRadius: "8px",
+                  color: activeTab === "table" ? "white" : "#667eea",
+                  background:
+                    activeTab === "table"
+                      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      : "transparent",
+                  border: "none",
+                  transition: "all 0.3s",
+                }}
               >
-                <i className="fas fa-table me-1"></i>Bảng dữ liệu
+                <i className="fas fa-table me-2"></i>Bảng Dữ Liệu
               </button>
             </li>
           </ul>
 
-          <div className="card-body">
+          <div className="card-body p-4">
             {/* Charts Tab */}
             {activeTab === "charts" && (
               <div>
-                <div className="row mb-3">
+                <div className="row mb-4">
                   <div className="col-md-6">
-                    <h5>{data.selectedSession?.subject || "Demo Subject"}</h5>
-                    <p className="text-muted">
-                      Teacher ID: {data.selectedSession?.teacher_id || "T123"}
+                    <h5 style={{ color: "#667eea" }} className="fw-bold">
+                      {data.selectedSession?.subject || "Môn Học Demo"}
+                    </h5>
+                    <p className="text-muted small">
+                      <i className="fas fa-user me-1"></i>ID Giáo Viên:{" "}
+                      {data.selectedSession?.teacher_id || "T123"}
                     </p>
                   </div>
                   <div className="col-md-6 text-end">
-                    <div className="btn-group">
+                    <div className="btn-group gap-2">
                       <button
-                        className="btn btn-outline-success btn-sm"
+                        className="btn btn-sm"
                         onClick={exportPDF}
                         disabled={exporting}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                        }}
                       >
                         <i className="fas fa-file-pdf me-1"></i>PDF
                       </button>
                       <button
-                        className="btn btn-outline-info btn-sm"
+                        className="btn btn-sm"
                         onClick={exportCSV}
                         disabled={exporting}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                        }}
                       >
                         <i className="fas fa-file-csv me-1"></i>CSV
                       </button>
                       <button
-                        className="btn btn-outline-warning btn-sm"
+                        className="btn btn-sm"
                         onClick={exportJSON}
                         disabled={exporting}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #ffc107 0%, #ff9800 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                        }}
                       >
                         <i className="fas fa-file-code me-1"></i>JSON
                       </button>
@@ -614,49 +766,82 @@ export default function AnalyticsPage() {
                 </div>
 
                 {/* Stat cards */}
-                <div className="row mb-4">
-                  <div className="col-md-3">
-                    <div className="card text-center">
+                <div className="row mb-4 g-3">
+                  <div className="col-lg-3 col-md-6">
+                    <div
+                      className="card shadow-sm border-0 text-center h-100"
+                      style={{
+                        borderRadius: "10px",
+                        borderTop: "4px solid #667eea",
+                      }}
+                    >
                       <div className="card-body">
-                        <h6 className="card-title">Engagement</h6>
-                        <h3 className="text-primary">{stats.engagement}%</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3">
-                    <div className="card text-center">
-                      <div className="card-body">
-                        <h6 className="card-title">Tỷ lệ Chán nản</h6>
-                        <h3 className="text-warning">
-                          {100 - stats.positive}%
+                        <h6 className="card-title text-muted fw-bold mb-2">
+                          Mức Độ Hứng Thú
+                        </h6>
+                        <h3 style={{ color: "#667eea" }} className="fw-bold">
+                          {stats.engagement}%
                         </h3>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="card text-center">
+                  <div className="col-lg-3 col-md-6">
+                    <div
+                      className="card shadow-sm border-0 text-center h-100"
+                      style={{
+                        borderRadius: "10px",
+                        borderTop: "4px solid #28a745",
+                      }}
+                    >
                       <div className="card-body">
-                        <h6 className="card-title">Attention</h6>
-                        <h3 className="text-success">{stats.attention}%</h3>
+                        <h6 className="card-title text-muted fw-bold mb-2">
+                          Tỷ Lệ Tích Cực
+                        </h6>
+                        <h3 style={{ color: "#28a745" }} className="fw-bold">
+                          {stats.positive}%
+                        </h3>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="card text-center">
+                  <div className="col-lg-3 col-md-6">
+                    <div
+                      className="card shadow-sm border-0 text-center h-100"
+                      style={{
+                        borderRadius: "10px",
+                        borderTop: "4px solid #764ba2",
+                      }}
+                    >
                       <div className="card-body">
-                        <h6 className="card-title">Dominant</h6>
-                        <h3 className="text-info">{dominantEmotion}</h3>
+                        <h6 className="card-title text-muted fw-bold mb-2">
+                          Cảm Xúc Chủ Đạo
+                        </h6>
+                        <h3
+                          style={{ color: "#764ba2" }}
+                          className="fw-bold text-truncate"
+                        >
+                          {dominantEmotion}
+                        </h3>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Charts */}
-                <div className="row">
+                <div className="row g-4">
                   <div className="col-lg-6">
-                    <div className="card" style={{ minHeight: 340 }}>
-                      <div className="card-header bg-primary text-white">
-                        <h5 className="mb-0">📊 Emotion Distribution</h5>
+                    <div
+                      className="card shadow-sm border-0"
+                      style={{ borderRadius: "12px", minHeight: 360 }}
+                    >
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "white",
+                          padding: "15px",
+                        }}
+                      >
+                        <h6 className="mb-0">📊 Phân Phối Cảm Xúc</h6>
                       </div>
                       <div className="card-body">
                         <EmotionBarBox
@@ -676,9 +861,19 @@ export default function AnalyticsPage() {
                   </div>
 
                   <div className="col-lg-6">
-                    <div className="card" style={{ minHeight: 340 }}>
-                      <div className="card-header bg-success text-white">
-                        <h5 className="mb-0">📈 Emotion Over Time</h5>
+                    <div
+                      className="card shadow-sm border-0"
+                      style={{ borderRadius: "12px", minHeight: 360 }}
+                    >
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+                          color: "white",
+                          padding: "15px",
+                        }}
+                      >
+                        <h6 className="mb-0">📊 Cảm Xúc Theo Thời Gian</h6>
                       </div>
                       <div className="card-body">
                         <EmotionOverTimeBox lineData={lineData} />
@@ -689,35 +884,56 @@ export default function AnalyticsPage() {
 
                 {/* Sessions List */}
                 {data.sessions.length > 0 && (
-                  <div className="row mt-4">
-                    <div className="col-md-12">
-                      <div className="card">
-                        <div className="card-header bg-info text-white">
-                          <h5 className="mb-0">Recent Sessions</h5>
-                        </div>
-                        <div className="card-body">
-                          <div className="list-group">
-                            {data.sessions.slice(0, 5).map((session) => (
-                              <button
-                                key={session.id}
-                                type="button"
-                                className={`list-group-item list-group-item-action ${
+                  <div className="mt-4">
+                    <div
+                      className="card shadow-sm border-0"
+                      style={{ borderRadius: "12px" }}
+                    >
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #0dcaf0 0%, #00d4ff 100%)",
+                          color: "white",
+                          padding: "15px",
+                        }}
+                      >
+                        <h6 className="mb-0">📚 Buổi Học Gần Đây</h6>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group">
+                          {data.sessions.slice(0, 5).map((session) => (
+                            <button
+                              key={session.id}
+                              type="button"
+                              className={`list-group-item list-group-item-action ${
+                                data.selectedSession?.id === session.id
+                                  ? "active"
+                                  : ""
+                              }`}
+                              onClick={() => handleSelectSession(session.id)}
+                              style={{
+                                borderLeft:
                                   data.selectedSession?.id === session.id
-                                    ? "active"
-                                    : ""
-                                }`}
-                                onClick={() => handleSelectSession(session.id)}
-                              >
-                                <div className="d-flex w-100 justify-content-between">
-                                  <h6 className="mb-1">{session.subject}</h6>
-                                  <small>{session.created_at}</small>
-                                </div>
-                                <p className="mb-1 text-muted">
-                                  <small>Session ID: {session.id}</small>
-                                </p>
-                              </button>
-                            ))}
-                          </div>
+                                    ? "4px solid #667eea"
+                                    : "none",
+                              }}
+                            >
+                              <div className="d-flex w-100 justify-content-between align-items-center">
+                                <h6 className="mb-1 fw-bold">
+                                  {session.subject}
+                                </h6>
+                                <small className="text-muted">
+                                  {new Date(
+                                    session.created_at
+                                  ).toLocaleDateString("vi-VN")}
+                                </small>
+                              </div>
+                              <p className="mb-0 text-muted small">
+                                <i className="fas fa-id-card me-1"></i>ID:{" "}
+                                {session.id}
+                              </p>
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -731,13 +947,14 @@ export default function AnalyticsPage() {
               <div>
                 <div className="row g-3 mb-3">
                   <div className="col-md-4">
-                    <label className="form-label">Subject</label>
+                    <label className="form-label fw-semibold">Môn Học</label>
                     <select
-                      className="form-select form-select-sm"
+                      className="form-select"
                       value={filterSubject}
                       onChange={(e) => setFilterSubject(e.target.value)}
+                      style={{ borderRadius: "8px" }}
                     >
-                      <option value="all">All Subjects</option>
+                      <option value="all">Tất Cả Môn Học</option>
                       {allSubjects.map((subject) => (
                         <option key={subject} value={subject}>
                           {subject}
@@ -746,31 +963,45 @@ export default function AnalyticsPage() {
                     </select>
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label">Status</label>
+                    <label className="form-label fw-semibold">Trạng Thái</label>
                     <select
-                      className="form-select form-select-sm"
+                      className="form-select"
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
+                      style={{ borderRadius: "8px" }}
                     >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="closed">Closed</option>
+                      <option value="all">Tất Cả Trạng Thái</option>
+                      <option value="active">Đang Hoạt Động</option>
+                      <option value="closed">Đã Đóng</option>
                     </select>
                   </div>
-                  <div className="col-md-4 text-end">
-                    <label className="form-label d-block mb-2"></label>
-                    <div className="btn-group btn-group-sm">
+                  <div className="col-md-4 d-flex align-items-end">
+                    <div className="gap-2 w-100 d-flex">
                       <button
-                        className="btn btn-success"
+                        className="btn w-100 fw-bold"
                         onClick={exportAllPDF}
                         disabled={exporting || filteredSessions.length === 0}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                        }}
                       >
                         <i className="fas fa-file-pdf me-1"></i>PDF
                       </button>
                       <button
-                        className="btn btn-info"
+                        className="btn w-100 fw-bold"
                         onClick={exportAllCSV}
                         disabled={exporting || filteredSessions.length === 0}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                        }}
                       >
                         <i className="fas fa-file-csv me-1"></i>CSV
                       </button>
@@ -778,67 +1009,97 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
 
-                <div className="alert alert-info alert-sm mb-3">
+                <div
+                  className="alert alert-info mb-3"
+                  style={{ borderRadius: "8px" }}
+                >
                   <small>
-                    Showing {filteredSessions.length} of {data.sessions.length}{" "}
-                    sessions
+                    <i className="fas fa-info-circle me-2"></i>Showing{" "}
+                    {filteredSessions.length} of {data.sessions.length} sessions
                   </small>
                 </div>
 
                 {/* Table */}
                 {filteredSessions.length === 0 ? (
                   <div className="text-center text-muted py-5">
-                    <i className="fas fa-inbox fa-3x mb-3"></i>
-                    <p>No sessions found</p>
+                    <i
+                      className="fas fa-inbox fa-3x mb-3"
+                      style={{ color: "#ccc" }}
+                    ></i>
+                    <p className="fw-bold">Không Tìm Thấy Buổi Học</p>
                   </div>
                 ) : (
                   <div className="table-responsive">
                     <table className="table table-hover">
-                      <thead className="table-light">
+                      <thead style={{ background: "#f8f9fa" }}>
                         <tr>
-                          <th>Date</th>
-                          <th>Subject</th>
-                          <th>Teacher</th>
-                          <th>Dominant</th>
-                          <th>Positive Rate</th>
-                          <th>Status</th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Ngày
+                          </th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Môn Học
+                          </th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Giáo Viên
+                          </th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Cảm Xúc Chủ Đạo
+                          </th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Tỷ Lệ Tích Cực
+                          </th>
+                          <th style={{ color: "#667eea", fontWeight: "bold" }}>
+                            Trạng Thái
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredSessions.map((session) => (
-                          <tr key={session.id}>
+                          <tr
+                            key={session.id}
+                            style={{ borderBottom: "1px solid #e0e0e0" }}
+                          >
                             <td>
-                              <small>
+                              <small className="text-muted">
                                 {new Date(
                                   session.created_at
                                 ).toLocaleDateString("vi-VN")}
                               </small>
                             </td>
-                            <td>{session.subject || "N/A"}</td>
                             <td>
-                              <code>T{session.teacher_id}</code>
+                              <strong>{session.subject || "N/A"}</strong>
+                            </td>
+                            <td>
+                              <code style={{ color: "#667eea" }}>
+                                T{session.teacher_id}
+                              </code>
                             </td>
                             <td>
                               <span
-                                className={`badge ${getEmotionBadgeColor(
+                                className={`badge rounded-pill ${getEmotionBadgeColor(
                                   session.dominantEmotion
                                 )}`}
+                                style={{ color: "white" }}
                               >
                                 {session.dominantEmotion}
                               </span>
                             </td>
                             <td>
-                              <span className="text-success fw-bold">
+                              <span
+                                className="fw-bold"
+                                style={{ color: "#28a745" }}
+                              >
                                 {session.positiveRate}%
                               </span>
                             </td>
                             <td>
                               <span
-                                className={`badge ${
+                                className={`badge rounded-pill ${
                                   session.status === "closed"
                                     ? "bg-success"
                                     : "bg-warning"
                                 }`}
+                                style={{ color: "white" }}
                               >
                                 {session.status || "N/A"}
                               </span>
@@ -852,22 +1113,38 @@ export default function AnalyticsPage() {
 
                 {/* Summary cards */}
                 {filteredSessions.length > 0 && (
-                  <div className="row mt-4">
-                    <div className="col-md-3">
-                      <div className="card text-center">
+                  <div className="row g-3 mt-4">
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card shadow-sm border-0 text-center h-100"
+                        style={{
+                          borderRadius: "10px",
+                          borderTop: "4px solid #667eea",
+                        }}
+                      >
                         <div className="card-body">
-                          <h5 className="card-title">Total Sessions</h5>
-                          <h3 className="text-primary">
+                          <h6 className="card-title text-muted fw-bold mb-2">
+                            Tổng Số Buổi Học
+                          </h6>
+                          <h3 style={{ color: "#667eea" }} className="fw-bold">
                             {filteredSessions.length}
                           </h3>
                         </div>
                       </div>
                     </div>
-                    <div className="col-md-3">
-                      <div className="card text-center">
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card shadow-sm border-0 text-center h-100"
+                        style={{
+                          borderRadius: "10px",
+                          borderTop: "4px solid #28a745",
+                        }}
+                      >
                         <div className="card-body">
-                          <h5 className="card-title">Avg. Positive</h5>
-                          <h3 className="text-success">
+                          <h6 className="card-title text-muted fw-bold mb-2">
+                            Trung Bình Tích Cực
+                          </h6>
+                          <h3 style={{ color: "#28a745" }} className="fw-bold">
                             {(
                               filteredSessions.reduce(
                                 (sum, s) =>
@@ -880,30 +1157,26 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="col-md-3">
-                      <div className="card text-center">
+                    <div className="col-lg-3 col-md-6">
+                      <div
+                        className="card shadow-sm border-0 text-center h-100"
+                        style={{
+                          borderRadius: "10px",
+                          borderTop: "4px solid #764ba2",
+                        }}
+                      >
                         <div className="card-body">
-                          <h5 className="card-title">Most Common Emotion</h5>
-                          <h3 className="text-info">
-                            {
-                              Object.entries(
-                                filteredSessions.reduce((acc, s) => {
-                                  acc[s.dominantEmotion] =
-                                    (acc[s.dominantEmotion] || 0) + 1;
-                                  return acc;
-                                }, {})
-                              ).sort((a, b) => b[1] - a[1])[0][0]
-                            }
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="card text-center">
-                        <div className="card-body">
-                          <h5 className="card-title">Total Sessions</h5>
-                          <h3 className="text-warning">
-                            {filteredSessions.length}
+                          <h6 className="card-title text-muted fw-bold mb-2">
+                            Cảm Xúc Chủ Đạo
+                          </h6>
+                          <h3 style={{ color: "#764ba2" }} className="fw-bold">
+                            {Object.entries(
+                              filteredSessions.reduce((acc, s) => {
+                                acc[s.dominantEmotion] =
+                                  (acc[s.dominantEmotion] || 0) + 1;
+                                return acc;
+                              }, {})
+                            ).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"}
                           </h3>
                         </div>
                       </div>

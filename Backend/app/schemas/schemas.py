@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 
 
@@ -8,14 +9,18 @@ from pydantic import BaseModel
 class UserBase(BaseModel):
     full_name: str
     email: str
-    role: str
+    role: str  # teacher, admin, student
+
 
 class UserCreate(UserBase):
-    password_hash: str
+    password: str
+
 
 class UserResponse(UserBase):
     id: int
+    is_active: bool
     created_at: datetime
+    last_login: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -28,100 +33,114 @@ class SessionBase(BaseModel):
     teacher_id: int
     subject: str
 
+
 class SessionCreate(SessionBase):
     pass
 
+
+class SessionUpdate(BaseModel):
+    status: Optional[str] = None
+    positive_rate: Optional[float] = None
+    dominant_emotion: Optional[str] = None
+    total_frames: Optional[int] = None
+    duration_seconds: Optional[int] = None
+    notes: Optional[str] = None
+
+
 class SessionResponse(SessionBase):
     id: int
+    status: str
     created_at: datetime
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    duration_seconds: int
+    total_frames: int
+    positive_rate: float
+    dominant_emotion: Optional[str] = None
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
 # ===========================
-#      SESSION END SCHEMAS
+#       SESSION ENDING
 # ===========================
 class SessionEndRequest(BaseModel):
-    """Data sent when ending a session from Frontend"""
-    session_id: str  # string format from frontend
-    start_time: datetime
-    end_time: datetime
-    duration: int  # seconds
-    emotion_counts: dict  # {emotion: count}
-    timeline: list  # [frame data]
+    session_id: int | str  # Accept both int and string (e.g., "session_1234")
+    start_time: str | datetime  # Accept ISO string or datetime
+    end_time: str | datetime
+    duration: int
+    subject: Optional[str] = None  # Optional subject
+    emotion_counts: Dict[str, int]
+    timeline: List[Dict[str, Any]]
 
 
 class SessionEndResponse(BaseModel):
-    """Response when session is successfully ended"""
     status: str = "success"
     message: str
     session_id: int
     total_frames: int
-    emotion_summary: dict
-    ended_at: datetime
+    emotion_summary: Dict[str, int]
+    ended_at: Optional[datetime] = None
 
 
 # ===========================
-#  EMOTION READINGS SCHEMAS
+#       EMOTION READING SCHEMAS
 # ===========================
 class EmotionReadingBase(BaseModel):
     session_id: int
+    frame_number: int
     emotion: str
-    confidence: float | None = None
-    face_count: int | None = None
-    image_path: str | None = None
+    confidence: Optional[float] = None
+    face_count: Optional[int] = None
+
 
 class EmotionReadingCreate(EmotionReadingBase):
-    pass
+    time_offset_seconds: Optional[float] = None
+    image_path: Optional[str] = None
+
 
 class EmotionReadingResponse(EmotionReadingBase):
     id: int
     timestamp: datetime
+    time_offset_seconds: Optional[float] = None
+    image_path: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
 # ===========================
-#     SESSION NOTES SCHEMAS
-# ===========================
-class SessionNotesBase(BaseModel):
-    summary: str | None = None
-    notes: str | None = None
-
-class SessionNotesCreate(SessionNotesBase):
-    session_id: int
-
-class SessionNotesResponse(SessionNotesBase):
-    id: int
-    session_id: int
-
-    class Config:
-        from_attributes = True
-
-
-# ===========================
-#     SESSION REPORT SCHEMAS
+#       SESSION REPORT SCHEMAS
 # ===========================
 class SessionReportBase(BaseModel):
     session_id: int
+    report_format: str  # PDF, CSV, JSON, EXCEL
     file_path: str
-    exported_by: int | None = None
+
 
 class SessionReportCreate(SessionReportBase):
-    pass
+    exported_by: Optional[int] = None
+
 
 class SessionReportResponse(SessionReportBase):
     id: int
-    created_at: datetime
+    file_size_bytes: Optional[int] = None
+    exported_by: Optional[int] = None
+    exported_at: datetime
 
     class Config:
         from_attributes = True
 
+
+# ===========================
+#       AUTH SCHEMAS
+# ===========================
 class LoginRequest(BaseModel):
     username: str
     password: str
+
 
 class LoginResponse(BaseModel):
     id: int
@@ -132,3 +151,57 @@ class LoginResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RegisterRequest(BaseModel):
+    full_name: str
+    email: str
+    password: str
+    role: str = "teacher"
+
+
+class RegisterResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
+# ===========================
+#       ANALYTICS (LOGIC ONLY)
+# ===========================
+class EmotionFrameData(BaseModel):
+    frame: int
+    timestamp: Optional[datetime] = None
+    current_emotion: str
+    positive_rate: float
+    faces: int
+    emotion_distribution: Dict[str, int]
+
+
+class AnalyticsRequest(BaseModel):
+    timeline: List[Dict[str, Any]]
+
+
+class AnalyticsResponse(BaseModel):
+    total_samples: int
+    dominant_emotion: str
+    positive_rate: float
+    emotion_distribution: Dict[str, int]
+    emotion_over_time: List[EmotionFrameData]
+    teaching_insights: List[str]
+
+
+# ===========================
+#       DASHBOARD
+# ===========================
+class DashboardStats(BaseModel):
+    total_sessions_today: int
+    total_students_monitored: int
+    avg_positive_rate: float
+    most_common_emotion: str
+    total_frames_analyzed: int
+    active_sessions: int

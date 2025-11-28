@@ -74,7 +74,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
 
   if (!analytics) {
     return (
-      <div className="alert alert-info">Upload a video to see analytics</div>
+      <div className="alert alert-info">Tải lên một video để xem phân tích</div>
     );
   }
 
@@ -98,18 +98,18 @@ const AnalyticsDashboard = ({ analysisData }) => {
   // Summary stats
   const stats = [
     {
-      label: "Total Samples",
+      label: "Tổng Mẫu",
       value: analytics.total_samples,
       icon: "📊",
     },
     {
-      label: "Dominant Emotion",
+      label: "Cảm Xúc Chủ Đạo",
       value: analytics.dominant_emotion,
       icon: "😊",
       color: EMOTION_COLORS[analytics.dominant_emotion],
     },
     {
-      label: "Positive Rate",
+      label: "Tỷ Lệ Tích Cực",
       value: `${analytics.positive_rate}%`,
       icon: "👍",
     },
@@ -141,7 +141,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
         analytics.teaching_insights.length > 0 && (
           <div className="card mb-4 alert-info">
             <div className="card-header bg-info text-white">
-              <h5 className="mb-0">💡 Teaching Insights</h5>
+              <h5 className="mb-0">💡 Những Hiểu Biết về Giảng Dạy</h5>
             </div>
             <div className="card-body">
               {analytics.teaching_insights.map((insight, idx) => (
@@ -159,7 +159,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
         <div className="col-lg-6 mb-4">
           <div className="card">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">📊 Emotion Distribution</h5>
+              <h5 className="mb-0">📊 Phân Phối Cảm Xúc</h5>
             </div>
             <div className="card-body">
               <ResponsiveContainer width="100%" height={300}>
@@ -183,7 +183,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
         <div className="col-lg-6 mb-4">
           <div className="card">
             <div className="card-header bg-success text-white">
-              <h5 className="mb-0">🥧 Emotion Breakdown</h5>
+              <h5 className="mb-0">🥧 Phân Tích Cảm Xúc</h5>
             </div>
             <div className="card-body">
               <ResponsiveContainer width="100%" height={300}>
@@ -213,7 +213,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
       {/* Emotion Over Time */}
       <div className="card">
         <div className="card-header bg-warning text-dark">
-          <h5 className="mb-0">📈 Emotion Over Time</h5>
+          <h5 className="mb-0">📈 Cảm Xúc Theo Thời Gian</h5>
         </div>
         <div className="card-body">
           <ResponsiveContainer width="100%" height={300}>
@@ -229,7 +229,7 @@ const AnalyticsDashboard = ({ analysisData }) => {
               />
               <YAxis
                 label={{
-                  value: "Positive Rate (%)",
+                  value: "Tỷ Lệ Tích Cực (%)",
                   angle: -90,
                   position: "insideLeft",
                 }}

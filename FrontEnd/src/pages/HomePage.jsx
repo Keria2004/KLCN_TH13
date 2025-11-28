@@ -16,7 +16,7 @@ export default function HomePage() {
     async function loadRecent() {
       setLoadingRecent(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/sessions/recent_classes`);
+        const res = await fetch(`${API_BASE_URL}/sessions/recent`);
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         setRecentClasses(data.data || []);
@@ -30,13 +30,11 @@ export default function HomePage() {
       }
     }
 
-    // Load on mount and retry every 10 seconds
     loadRecent();
     const interval = setInterval(loadRecent, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  // Demo: teacher từ localStorage/cookie… tùy bạn
   const teacherName = localStorage.getItem("teacher_name") || "Unknown";
   const teacherId = localStorage.getItem("teacher_id") || "N/A";
 
@@ -44,21 +42,28 @@ export default function HomePage() {
     e.preventDefault();
     setError("");
 
+    const currentTeacherId = localStorage.getItem("teacher_id");
+    if (
+      !currentTeacherId ||
+      currentTeacherId === "N/A" ||
+      currentTeacherId === "0"
+    ) {
+      setError("Vui lòng đăng nhập để tạo lớp học");
+      return;
+    }
+
     if (!backendConnected) {
-      setError(
-        "❌ Backend server is not connected. Please start the backend server first."
-      );
+      setError("Máy chủ không kết nối. Vui lòng khởi động máy chủ trước.");
       return;
     }
 
     if (!subject.trim()) {
-      setError("Please enter a class subject");
+      setError("Vui lòng nhập môn học");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-      const teacherId = localStorage.getItem("teacher_id") || "1";
 
       const res = await fetch(`${API_BASE_URL}/sessions/create`, {
         method: "POST",
@@ -68,7 +73,7 @@ export default function HomePage() {
         },
         body: JSON.stringify({
           subject: subject,
-          teacher_id: parseInt(teacherId),
+          teacher_id: parseInt(currentTeacherId),
         }),
       });
 
@@ -81,248 +86,437 @@ export default function HomePage() {
       window.location.href = "/monitor";
     } catch (err) {
       console.error("Error starting class:", err);
-      setError(`Error: ${err.message}`);
+      setError(`Lỗi: ${err.message}`);
     }
   };
 
   const handleContinue = (cls) => {
-    // tuỳ backend: set cookie / localStorage / navigate
     console.log("Continue class", cls);
     window.location.href = "/monitor";
   };
 
   return (
-    <div className="row mt-5 mb-4">
-      <div className="col-md-12 text-center">
-        <h1 className="display-4 fw-bold text-primary">Smart Classroom</h1>
-        <p className="lead">
-          Enhance teaching effectiveness through real-time emotion monitoring
-        </p>
+    <div className="min-vh-100" style={{ background: "#f8f9fa" }}>
+      {/* Header Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          padding: "60px 20px",
+        }}
+      >
+        <div className="container">
+          <div className="text-center">
+            <h1 className="display-5 fw-bold mb-2">Lớp Học Thông Minh</h1>
+            <p className="lead mb-0" style={{ opacity: 0.9 }}>
+              Nâng cao hiệu quả giảng dạy nhờ gán sát cảm xúc thời gian thực
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="col-lg-6 mt-4">
-        {/* Start a New Class card */}
-        <div className="card mb-4">
-          <div className="card-header">
-            <h4 className="mb-0">
-              <i className="fas fa-chalkboard-teacher me-2"></i>Start a New
-              Class
-            </h4>
-          </div>
-          <div className="card-body">
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                <i className="fas fa-exclamation-triangle me-2"></i>
-                {error}
-              </div>
-            )}
-
-            {/* Tabs */}
-            <ul className="nav nav-tabs" role="tablist">
-              <li className="nav-item" role="presentation">
-                <button
-                  className={`nav-link ${tab === "new" ? "active" : ""}`}
-                  type="button"
-                  onClick={() => setTab("new")}
-                >
-                  <i className="fas fa-plus me-1"></i>New Class
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className={`nav-link ${tab === "continue" ? "active" : ""}`}
-                  type="button"
-                  onClick={() => setTab("continue")}
-                >
-                  <i className="fas fa-play me-1"></i>Continue Class
-                </button>
-              </li>
-            </ul>
-
-            <div className="tab-content mt-3">
-              {/* New Class */}
-              {tab === "new" && (
-                <div className="tab-pane fade show active">
-                  <form onSubmit={handleStartClass}>
-                    <div className="mb-3">
-                      <label className="form-label">Teacher:</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={`${teacherName} (${teacherId})`}
-                        readOnly
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Subject:</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter subject name"
-                        required
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Select Camera:</label>
-                      <select
-                        className="form-select"
-                        value={cameraIndex}
-                        onChange={(e) => setCameraIndex(e.target.value)}
-                      >
-                        {cameras.map((cam) => (
-                          <option key={cam} value={cam}>
-                            Camera {cam}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="d-grid gap-2 mt-4">
-                      <button type="submit" className="btn btn-success btn-lg">
-                        <i className="fas fa-play-circle me-2"></i>
-                        Start New Class
-                      </button>
-                    </div>
-                  </form>
+      {/* Main Content */}
+      <div className="container py-5">
+        {/* Login Warning Banner */}
+        {(!teacherId || teacherId === "N/A" || teacherId === "0") && (
+          <div className="row mb-4">
+            <div className="col-12">
+              <div
+                className="alert alert-warning alert-dismissible fade show d-flex align-items-center"
+                role="alert"
+                style={{ borderRadius: "10px", border: "2px solid #fff3cd" }}
+              >
+                <i
+                  className="fas fa-exclamation-triangle me-3 fa-lg"
+                  style={{ color: "#856404" }}
+                ></i>
+                <div className="flex-grow-1">
+                  <strong>Cảnh báo!</strong> Bạn chưa đăng nhập. Vui lòng{" "}
+                  <a href="/login" className="alert-link ms-1 fw-bold">
+                    đăng nhập
+                  </a>{" "}
+                  để tạo lớp học.
                 </div>
-              )}
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="alert"
+                  aria-label="Close"
+                ></button>
+              </div>
+            </div>
+          </div>
+        )}
 
-              {/* Continue Class */}
-              {tab === "continue" && (
-                <div className="tab-pane fade show active">
-                  <div className="mt-3" id="recent-classes-list">
-                    {recentClasses.length === 0 ? (
-                      <div className="alert alert-info text-center">
-                        <i className="fas fa-info-circle fa-2x mb-2"></i>
-                        <h5>No Recent Classes</h5>
-                        <p>
-                          Start your first class using the &quot;New Class&quot;
-                          tab.
-                        </p>
+        <div className="row g-4">
+          {/* Left: Start a New Class card */}
+          <div className="col-lg-6">
+            <div
+              className="card shadow-sm border-0 h-100"
+              style={{ borderRadius: "12px", overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  padding: "20px",
+                }}
+              >
+                <h4 className="mb-0">
+                  <i className="fas fa-chalkboard-teacher me-2"></i>Bắt Đầu Buổi
+                  Học Mới
+                </h4>
+              </div>
+              <div className="card-body p-4">
+                {error && (
+                  <div
+                    className="alert alert-danger alert-dismissible fade show d-flex align-items-start"
+                    role="alert"
+                    style={{ borderRadius: "8px" }}
+                  >
+                    <i
+                      className="fas fa-exclamation-circle me-2 mt-1"
+                      style={{ color: "#721c24" }}
+                    ></i>
+                    <div className="flex-grow-1">
+                      <strong>Lỗi!</strong> {error}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setError("")}
+                    ></button>
+                  </div>
+                )}
+
+                {/* Tabs */}
+                <ul
+                  className="nav nav-pills nav-fill gap-2 mb-3"
+                  role="tablist"
+                  style={{ borderBottom: "none" }}
+                >
+                  <li className="nav-item" role="presentation">
+                    <button
+                      className={`nav-link fw-bold py-2 ${
+                        tab === "new" ? "active" : ""
+                      }`}
+                      type="button"
+                      onClick={() => setTab("new")}
+                      style={{
+                        borderRadius: "8px",
+                        color: tab === "new" ? "white" : "#667eea",
+                        background:
+                          tab === "new"
+                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                            : "#f0f0f0",
+                        border: "none",
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      <i className="fas fa-plus me-1"></i>Buổi Học Mới
+                    </button>
+                  </li>
+                  <li className="nav-item" role="presentation">
+                    <button
+                      className={`nav-link fw-bold py-2 ${
+                        tab === "continue" ? "active" : ""
+                      }`}
+                      type="button"
+                      onClick={() => setTab("continue")}
+                      style={{
+                        borderRadius: "8px",
+                        color: tab === "continue" ? "white" : "#667eea",
+                        background:
+                          tab === "continue"
+                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                            : "#f0f0f0",
+                        border: "none",
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      <i className="fas fa-play me-1"></i>Tiếp Tục
+                    </button>
+                  </li>
+                </ul>
+
+                <div className="tab-content mt-4">
+                  {/* New Class */}
+                  {tab === "new" && (
+                    <form onSubmit={handleStartClass}>
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold text-dark">
+                          Giáo Viên
+                        </label>
+                        <div
+                          className="input-group"
+                          style={{ borderRadius: "8px", overflow: "hidden" }}
+                        >
+                          <span
+                            className="input-group-text bg-light border-0"
+                            style={{ color: "#667eea" }}
+                          >
+                            <i className="fas fa-user"></i>
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control border-0"
+                            value={`${teacherName} (${teacherId})`}
+                            readOnly
+                            style={{ background: "#f8f9fa" }}
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      <div className="row g-3">
-                        {recentClasses.slice(0, 6).map((cls) => (
-                          <div className="col-md-6" key={cls.id}>
-                            <div className="card class-card">
-                              <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-start mb-2">
-                                  <h6 className="card-title mb-1">
-                                    {cls.subject}
-                                  </h6>
-                                  <span className="badge bg-secondary">
-                                    {cls.dominant_emotion}
-                                  </span>
-                                </div>
-                                <p className="card-text text-muted small mb-2">
-                                  <i className="fas fa-user me-1"></i>
-                                  {cls.teacher_id} •{" "}
-                                  <i className="fas fa-clock me-1"></i>
-                                  {cls.date}
-                                </p>
-                                <div className="btn-group w-100">
+
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold text-dark">
+                          Môn Học
+                        </label>
+                        <div
+                          className="input-group"
+                          style={{ borderRadius: "8px", overflow: "hidden" }}
+                        >
+                          <span
+                            className="input-group-text bg-light border-0"
+                            style={{ color: "#667eea" }}
+                          >
+                            <i className="fas fa-book"></i>
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control border-0"
+                            placeholder="Nhập tên môn học"
+                            required
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            style={{ background: "#f8f9fa" }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold text-dark">
+                          Chọn Camera
+                        </label>
+                        <select
+                          className="form-select border-0"
+                          value={cameraIndex}
+                          onChange={(e) => setCameraIndex(e.target.value)}
+                          style={{
+                            background: "#f8f9fa",
+                            borderRadius: "8px",
+                            color: "#667eea",
+                          }}
+                        >
+                          {cameras.map((cam) => (
+                            <option key={cam} value={cam}>
+                              Camera {cam}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="btn w-100 fw-bold py-2"
+                        disabled={
+                          !teacherId || teacherId === "N/A" || teacherId === "0"
+                        }
+                        title={
+                          !teacherId || teacherId === "N/A" || teacherId === "0"
+                            ? "Vui lòng đăng nhập trước"
+                            : ""
+                        }
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          opacity:
+                            !teacherId ||
+                            teacherId === "N/A" ||
+                            teacherId === "0"
+                              ? 0.5
+                              : 1,
+                        }}
+                      >
+                        <i className="fas fa-play-circle me-2"></i>Bắt Đầu Buổi
+                        Học Mới
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Continue Class */}
+                  {tab === "continue" && (
+                    <div>
+                      {recentClasses.length === 0 ? (
+                        <div
+                          className="alert alert-info text-center"
+                          style={{ borderRadius: "10px" }}
+                        >
+                          <i
+                            className="fas fa-info-circle fa-2x mb-2"
+                            style={{ color: "#0c5460" }}
+                          ></i>
+                          <h5 className="mt-2">Không Có Buổi Học Gần Đây</h5>
+                          <p className="mb-0">
+                            Hãy bắt đầu buổi học đầu tiên của bạn.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="row g-3">
+                          {recentClasses.slice(0, 4).map((cls) => (
+                            <div className="col-md-6" key={cls.id}>
+                              <div
+                                className="card h-100 shadow-sm"
+                                style={{
+                                  borderRadius: "10px",
+                                  border: "1px solid #e0e0e0",
+                                }}
+                              >
+                                <div className="card-body">
+                                  <div className="d-flex justify-content-between align-items-start mb-2">
+                                    <h6
+                                      className="card-title mb-0 fw-bold"
+                                      style={{ color: "#667eea" }}
+                                    >
+                                      {cls.subject}
+                                    </h6>
+                                    <span
+                                      className="badge"
+                                      style={{
+                                        background:
+                                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      }}
+                                    >
+                                      {cls.dominant_emotion}
+                                    </span>
+                                  </div>
+                                  <p className="card-text text-muted small mb-3">
+                                    <i
+                                      className="fas fa-user me-1"
+                                      style={{ color: "#667eea" }}
+                                    ></i>
+                                    {cls.teacher_id} •{" "}
+                                    <i
+                                      className="fas fa-clock me-1"
+                                      style={{ color: "#667eea" }}
+                                    ></i>
+                                    {cls.date}
+                                  </p>
                                   <button
-                                    className="btn btn-primary btn-sm"
+                                    className="btn btn-sm w-100"
+                                    style={{
+                                      background:
+                                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      color: "white",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                    }}
                                     onClick={() => handleContinue(cls)}
                                   >
-                                    <i className="fas fa-play me-1"></i>Continue
-                                  </button>
-                                  <button
-                                    className="btn btn-outline-primary btn-sm"
-                                    onClick={() =>
-                                      (window.location.href = `/analytics?classId=${cls.id}`)
-                                    }
-                                  >
-                                    <i className="fas fa-chart-line"></i>
+                                    <i className="fas fa-play me-1"></i>Tiếp Tục
                                   </button>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Management Tools */}
-        <div className="card">
-          <div className="card-header">
-            <h4 className="mb-0">
-              <i className="fas fa-cog me-2"></i>Management Tools
-            </h4>
-          </div>
-          <div className="card-body">
-            <div className="row g-3">
-              <div className="col-md-6">
-                <button className="btn btn-outline-primary d-block py-3 w-100">
-                  <i className="fas fa-user-graduate fa-2x mb-2"></i>
-                  <br />
-                  Manage Students
-                </button>
-              </div>
-
-              <div className="col-md-6">
-                <button className="btn btn-outline-secondary d-block py-3 w-100">
-                  <i className="fas fa-history fa-2x mb-2"></i>
-                  <br />
-                  Recent Classes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right column: About Smart Classroom */}
-      <div className="col-lg-6 mt-4">
-        <div className="card mb-4">
-          <div className="card-header">
-            <h4 className="mb-0">
-              <i className="fas fa-info-circle me-2"></i>About Smart Classroom
-            </h4>
-          </div>
-          <div className="card-body">
-            <p>
-              Smart Classroom uses advanced emotion recognition technology to
-              help teachers understand their students&apos; engagement and
-              emotional responses during class in real-time.
-            </p>
-
-            <h5 className="mt-4">Key Features:</h5>
-            <div className="row mt-3 g-3">
-              {/* Bạn có thể giữ nguyên 4 ô feature giống html gốc */}
-              {/* ... rút gọn cho ngắn */}
-              <div className="col-md-6">
-                <div className="feature-card p-3 border rounded">
-                  <div className="d-flex align-items-center mb-2">
-                    <div className="feature-icon me-3 text-primary">
-                      <i className="fas fa-camera"></i>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <h6 className="mb-0">Real-time Emotion Detection</h6>
-                  </div>
-                  <p className="text-muted small mb-0">
-                    Analyzes facial expressions to determine emotional states
-                    during class.
-                  </p>
+                  )}
                 </div>
               </div>
-              {/* Thêm 3 card còn lại tương tự... */}
             </div>
+          </div>
 
-            <div className="alert alert-info mt-4 mb-0">
-              <i className="fas fa-lock me-2"></i>
-              <strong>Privacy Notice:</strong> All emotion data is processed
-              locally and is only used to provide feedback to the teacher. No
-              personal data is stored or shared with third parties.
+          {/* Right: About Smart Classroom */}
+          <div className="col-lg-6">
+            <div
+              className="card shadow-sm border-0 h-100"
+              style={{ borderRadius: "12px", overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  background:
+                    "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+                  color: "white",
+                  padding: "20px",
+                }}
+              >
+                <h4 className="mb-0">
+                  <i className="fas fa-lightbulb me-2"></i>Về Lớp Học Thông Minh
+                </h4>
+              </div>
+              <div className="card-body p-4">
+                <p>
+                  Lớp Học Thông Minh sử dụng công nghệ nhận diện cảm xúc nâng
+                  cao để giúp giáo viên hiểu được mức độ hứng thú và phản ứng
+                  cảm xúc của học sinh trong lớp theo thời gian thực.
+                </p>
+
+                <h5 className="mt-4 mb-3 fw-bold" style={{ color: "#667eea" }}>
+                  Các Tính Năng Chính
+                </h5>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div
+                      className="p-3"
+                      style={{
+                        background: "#f8f9fa",
+                        borderRadius: "10px",
+                        borderLeft: "4px solid #667eea",
+                      }}
+                    >
+                      <div className="d-flex align-items-center mb-2">
+                        <i
+                          className="fas fa-camera fa-2x"
+                          style={{ color: "#667eea" }}
+                        ></i>
+                      </div>
+                      <h6 className="fw-bold mb-1">Nhận Diện Thực Thời</h6>
+                      <p className="text-muted small mb-0">
+                        Phân tích biểu hiện khuôn mặt để xác định trạng thái cảm
+                        xúc.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div
+                      className="p-3"
+                      style={{
+                        background: "#f8f9fa",
+                        borderRadius: "10px",
+                        borderLeft: "4px solid #764ba2",
+                      }}
+                    >
+                      <div className="d-flex align-items-center mb-2">
+                        <i
+                          className="fas fa-chart-line fa-2x"
+                          style={{ color: "#764ba2" }}
+                        ></i>
+                      </div>
+                      <h6 className="fw-bold mb-1">Báo Cáo Chi Tiết</h6>
+                      <p className="text-muted small mb-0">
+                        Thống kê và biểu đồ cảm xúc toàn lớp theo thời gian.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="alert alert-info mt-4 mb-0"
+                  style={{ borderRadius: "10px", border: "1px solid #d1ecf1" }}
+                >
+                  <i
+                    className="fas fa-lock me-2"
+                    style={{ color: "#0c5460" }}
+                  ></i>
+                  <strong>Thông Báo Bảo Mật:</strong> Tất cả dữ liệu được xử lý
+                  cục bộ và không được chia sẻ với bên thứ ba.
+                </div>
+              </div>
             </div>
           </div>
         </div>

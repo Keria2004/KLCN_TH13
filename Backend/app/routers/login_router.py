@@ -10,6 +10,7 @@ router = APIRouter(prefix="/login", tags=["Auth"])
 
 @router.post("/", response_model=LoginResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    """Đăng nhập"""
     # Tìm người dùng theo email (hoặc username)
     user = (
         db.query(User)

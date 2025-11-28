@@ -41,7 +41,7 @@ export default function EmotionLineChart({ data = [] }) {
         labels,
         datasets: [
           {
-            label: "Positive Emotion %",
+            label: "Tỷ Lệ Cảm Xúc Tích Cực %",
             data,
             borderColor: "rgba(13, 110, 253, 1)",
             backgroundColor: "rgba(13, 110, 253, 0.1)",

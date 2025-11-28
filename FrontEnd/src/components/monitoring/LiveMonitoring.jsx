@@ -3,7 +3,7 @@ import axios from "axios";
 import API_BASE_URL from "../../config/apiConfig";
 import "../../styles/LiveMonitoring.css";
 
-const LiveMonitoring = ({ onAnalysisExport }) => {
+const LiveMonitoring = ({ onAnalysisExport, onEmotionUpdate }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -202,27 +202,42 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
             setFaceCount(faces ? faces.length : 0);
             setEmotionDist(emotion_distribution || {});
 
-            // Add to timeline
-            const frameData = {
-              frame:
-                streamMode === "video"
-                  ? Math.round(currentTimeRef.current * 30)
-                  : sessionTimelineRef.current.length,
-              timestamp: new Date().toISOString(),
-              current_emotion,
-              positive_rate,
-              faces: faces ? faces.length : 0,
-              emotion_distribution,
-            };
-
-            sessionTimelineRef.current.push(frameData);
-            setSessionTimeline([...sessionTimelineRef.current]);
-
             // Update emotion counts
-            setEmotionCounts((prev) => ({
-              ...prev,
-              [current_emotion]: (prev[current_emotion] || 0) + 1,
-            }));
+            setEmotionCounts((prev) => {
+              const updated = {
+                ...prev,
+                [current_emotion]: (prev[current_emotion] || 0) + 1,
+              };
+
+              // Convert emotionCounts to array format for parent component
+              const emotionArray = [
+                updated["Happy"] || 0,
+                updated["Sad"] || 0,
+                updated["Angry"] || 0,
+                updated["Surprise"] || 0,
+                updated["Neutral"] || 0,
+                updated["Disgust"] || 0,
+                updated["Fear"] || 0,
+              ];
+
+              const totalFrames = emotionArray.reduce((a, b) => a + b, 0) || 1;
+              const positiveCount =
+                (updated["Happy"] || 0) + (updated["Surprise"] || 0);
+              const positiveRate = (
+                (positiveCount / totalFrames) *
+                100
+              ).toFixed(0);
+
+              // Notify parent with emotion data
+              if (onEmotionUpdate) {
+                onEmotionUpdate(emotionArray, current_emotion, {
+                  engagement: positiveRate,
+                  positive: positiveRate,
+                });
+              }
+
+              return updated;
+            });
           } catch (error) {
             console.error("Analysis error:", error.message);
           }
@@ -231,6 +246,8 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
           if (isDetectingRef.current) {
             const interval = streamMode === "video" ? 300 : 500; // 3 FPS for video, 2 FPS for webcam
             analysisRef.current = setTimeout(() => analyzeVideo(), interval);
+          } else {
+            analysisRef.current = null;
           }
         },
         "image/jpeg",
@@ -265,23 +282,36 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
 
   // End session and save data
   const endSession = async () => {
-    if (sessionTimeline.length === 0) {
-      alert("Không có dữ liệu để lưu. Vui lòng bắt đầu nhận diện trước!");
+    // Check if emotionCounts has any data instead of sessionTimeline
+    const hasEmotionData =
+      Object.keys(emotionCounts).length > 0 &&
+      Object.values(emotionCounts).some((count) => count > 0);
+
+    if (!hasEmotionData) {
+      alert(
+        "Không có dữ liệu cảm xúc để lưu. Vui lòng bắt đầu nhận diện trước!"
+      );
       return;
     }
 
     stopDetection();
     stopStream();
 
-    // Prepare session data
+    // Prepare session data - use emotionCounts if sessionTimeline is empty
+    const finalSessionTimeline =
+      sessionTimelineRef.current.length > 0 ? sessionTimelineRef.current : [];
+    const totalFrames = Object.values(emotionCounts).reduce((a, b) => a + b, 0);
+
     const sessionData = {
-      session_id: `session_${new Date().getTime()}`,
+      session_id:
+        localStorage.getItem("session_id") || `session_${new Date().getTime()}`,
+      subject: localStorage.getItem("subject") || "Unknown",
       start_time: sessionStartTime.toISOString(),
       end_time: new Date().toISOString(),
       duration: Math.round((new Date() - sessionStartTime) / 1000),
-      total_frames: sessionTimeline.length,
+      total_frames: totalFrames || finalSessionTimeline.length,
       emotion_counts: emotionCounts,
-      timeline: sessionTimeline,
+      timeline: finalSessionTimeline,
     };
 
     console.log("Session Data:", sessionData);
@@ -300,11 +330,28 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
       // Save to localStorage for Analytics page
       localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
 
+      // 2️⃣ Fetch updated sessions list từ backend
+      try {
+        console.log("Reloading sessions list...");
+        const sessionsResponse = await axios.get(
+          `${API_BASE_URL}/sessions/recent_classes`
+        );
+        if (sessionsResponse.data.data) {
+          localStorage.setItem(
+            "sessionsList",
+            JSON.stringify(sessionsResponse.data.data)
+          );
+          console.log("✅ Sessions list updated:", sessionsResponse.data.data);
+        }
+      } catch (sessionsError) {
+        console.warn("Could not reload sessions list:", sessionsError.message);
+      }
+
       alert(
-        `✅ Buổi học đã kết thúc!\n📊 Đã phân tích ${sessionTimeline.length} frame\n💾 Dữ liệu đã lưu vào CSDL\n🎥 Chuyển sang Analytics để xem chi tiết`
+        `✅ Buổi học đã kết thúc!\n📊 Đã phân tích ${totalFrames} frame\n💾 Dữ liệu đã lưu vào CSDL\n🎥 Chuyển sang Analytics để xem chi tiết`
       );
 
-      // Redirect to Analytics
+      // 3️⃣ Redirect to Analytics
       setTimeout(() => {
         window.location.href = "/analytics";
       }, 500);
@@ -341,7 +388,7 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
           <div className="video-header">
             <h5>
               <i className="fas fa-video"></i>{" "}
-              {streamMode === "webcam" ? "Webcam Live" : "Video Upload"}
+              {streamMode === "webcam" ? "Webcam Trực Tiếp" : "Tải Video"}
             </h5>
             {isDetecting && (
               <span className="badge bg-danger">
@@ -409,7 +456,7 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
                   className="btn btn-info"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <i className="fas fa-upload"></i> Upload Video
+                  <i className="fas fa-upload"></i> Tải Video
                 </button>
                 <input
                   ref={fileInputRef}
@@ -423,21 +470,21 @@ const LiveMonitoring = ({ onAnalysisExport }) => {
               <>
                 {!isDetecting ? (
                   <button className="btn btn-success" onClick={startDetection}>
-                    <i className="fas fa-play"></i> Start Detect
+                    <i className="fas fa-play"></i> Bắt Đầu
                   </button>
                 ) : (
                   <button className="btn btn-warning" onClick={stopDetection}>
-                    <i className="fas fa-pause"></i> Stop Detect
+                    <i className="fas fa-pause"></i> Tạm Dừng
                   </button>
                 )}
 
                 <button className="btn btn-danger" onClick={stopStream}>
-                  <i className="fas fa-stop"></i> Stop Stream
+                  <i className="fas fa-stop"></i> Dừng Luồng
                 </button>
 
                 {isDetecting && (
                   <button className="btn btn-dark" onClick={endSession}>
-                    <i className="fas fa-flag-checkered"></i> End Session
+                    <i className="fas fa-flag-checkered"></i> Kết Thúc Buổi Học
                   </button>
                 )}
               </>

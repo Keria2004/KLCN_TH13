@@ -6,11 +6,11 @@ export default function ReportTable({ rows }) {
       <table className="report-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Positive Rate</th>
-            <th>Dominant Emotion</th>
-            <th>Notes</th>
-            <th>File</th>
+            <th>Thời Gian</th>
+            <th>Tỷ Lệ Tích Cực</th>
+            <th>Cảm Xúc Chủ Đạo</th>
+            <th>Ghi Chú</th>
+            <th>Tệp</th>
           </tr>
         </thead>
 
@@ -22,7 +22,7 @@ export default function ReportTable({ rows }) {
               <td>{r.emotion}</td>
               <td>{r.note}</td>
               <td>
-                <button className="btn-view">View</button>
+                <button className="btn-view">Xem</button>
               </td>
             </tr>
           ))}
