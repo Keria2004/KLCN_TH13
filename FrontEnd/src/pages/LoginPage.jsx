@@ -5,6 +5,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [registerUsername, setRegisterUsername] = useState(""); // Username mới cho register
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("teacher");
   const [error, setError] = useState("");
@@ -68,6 +69,7 @@ export default function LoginPage() {
         },
         body: JSON.stringify({
           full_name: fullName,
+          username: registerUsername || null, // Username tùy chọn
           email,
           password,
           role,
@@ -83,10 +85,12 @@ export default function LoginPage() {
       setSuccess("✅ Đăng kí thành công! Vui lòng đăng nhập.");
       setTimeout(() => {
         setActiveTab("login");
-        setUsername(email);
+        // Có thể đăng nhập bằng username hoặc email
+        setUsername(registerUsername || email);
         setPassword("");
         setEmail("");
         setFullName("");
+        setRegisterUsername("");
       }, 1500);
     } catch (err) {
       setError("Không thể kết nối đến máy chủ");
@@ -353,6 +357,34 @@ export default function LoginPage() {
                           style={{ background: "#f8f9fa" }}
                         />
                       </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="form-label fw-semibold text-dark">
+                        Tên Đăng Nhập (Tùy Chọn)
+                      </label>
+                      <div
+                        className="input-group"
+                        style={{ borderRadius: "8px", overflow: "hidden" }}
+                      >
+                        <span
+                          className="input-group-text bg-light border-0"
+                          style={{ color: "#667eea" }}
+                        >
+                          <i className="fas fa-user-circle"></i>
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control border-0"
+                          value={registerUsername}
+                          onChange={(e) => setRegisterUsername(e.target.value)}
+                          placeholder="Nhập tên đăng nhập (hoặc bỏ trống)..."
+                          style={{ background: "#f8f9fa" }}
+                        />
+                      </div>
+                      <small className="text-muted d-block mt-1">
+                        💡 Để trống nếu chỉ muốn dùng email để đăng nhập
+                      </small>
                     </div>
 
                     <div className="mb-4">

@@ -174,10 +174,6 @@ const LiveMonitoring = ({ onAnalysisExport, onEmotionUpdate }) => {
           formData.append("file", blob, "frame.jpg");
 
           try {
-            console.log(
-              "Sending frame to API:",
-              `${API_BASE_URL}/monitoring/frame`
-            );
             const response = await axios.post(
               `${API_BASE_URL}/monitoring/frame`,
               formData,
@@ -186,8 +182,6 @@ const LiveMonitoring = ({ onAnalysisExport, onEmotionUpdate }) => {
                 timeout: 10000,
               }
             );
-
-            console.log("API Response:", response.data);
 
             const {
               current_emotion,
@@ -314,25 +308,19 @@ const LiveMonitoring = ({ onAnalysisExport, onEmotionUpdate }) => {
       timeline: finalSessionTimeline,
     };
 
-    console.log("Session Data:", sessionData);
-
     // 1️⃣ Lưu vào database thông qua backend
     try {
-      console.log("Sending end_session to backend...");
       const response = await axios.post(
         `${API_BASE_URL}/sessions/end_session`,
         sessionData,
         { timeout: 10000 }
       );
 
-      console.log("✅ Session saved to DB:", response.data);
-
       // Save to localStorage for Analytics page
       localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
 
       // 2️⃣ Fetch updated sessions list từ backend
       try {
-        console.log("Reloading sessions list...");
         const sessionsResponse = await axios.get(
           `${API_BASE_URL}/sessions/recent_classes`
         );
@@ -341,7 +329,6 @@ const LiveMonitoring = ({ onAnalysisExport, onEmotionUpdate }) => {
             "sessionsList",
             JSON.stringify(sessionsResponse.data.data)
           );
-          console.log("✅ Sessions list updated:", sessionsResponse.data.data);
         }
       } catch (sessionsError) {
         console.warn("Could not reload sessions list:", sessionsError.message);

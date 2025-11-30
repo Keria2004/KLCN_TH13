@@ -75,12 +75,12 @@ def process_frame(frame: np.ndarray):
                     continue
 
                 # PREPROCESS
-                resized = _imresize(crop, (416, 416))
+                resized = _imresize(crop, (256, 256))
                 norm = preprocess_input(resized, v2=True)
                 final_img = ((norm + 1) / 2 * 255).astype("uint8")
 
                 # EMOTION YOLO
-                emo_res = emotion_model(final_img, imgsz=416, conf=0.5, verbose=False)[0]
+                emo_res = emotion_model(final_img, imgsz=256, conf=0.5, verbose=False)[0]
                 num_emotions = len(emo_res.boxes) if emo_res.boxes else 0
                 logger.debug(f"Face {idx}: Detected {num_emotions} emotions")
 

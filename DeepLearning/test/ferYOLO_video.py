@@ -19,7 +19,7 @@ from utils.preprocessor import preprocess_input, _imresize
 MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
 
 FACE_MODEL_PATH = os.path.join(MODEL_DIR, "face_detection.pt")
-EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "fer_YOLOv1.pt")
+EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "best.pt")
 
 print("Using face model:", FACE_MODEL_PATH)
 print("Using emotion model:", EMOTION_MODEL_PATH)
@@ -64,7 +64,7 @@ def get_color_by_emotion(emo):
 # ===============================
 # VIDEO INPUT
 # ===============================
-VIDEO_PATH = r"D:\KLCN_TH013\videos\video.mp4"
+VIDEO_PATH = r"D:\KLCN_TH13-master\videos\video1.mp4"
 
 
 cap = cv2.VideoCapture(VIDEO_PATH)
@@ -73,13 +73,27 @@ if not cap.isOpened():
     print("Path:", VIDEO_PATH)
     sys.exit()
 
-print("🎬 Processing... Press 'q' to quit.")
+# 📊 Lấy thông tin video
+video_fps = cap.get(cv2.CAP_PROP_FPS)
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+video_duration = total_frames / video_fps if video_fps > 0 else 0
+
+print(f"🎬 Video Info:")
+print(f"   FPS: {video_fps}")
+print(f"   Total frames: {total_frames}")
+print(f"   Duration: {video_duration:.2f} seconds")
+
+# 📊 Tính detection frame interval
+# Detect cứ 2 frame = half FPS (nhanh hơn nhưng vẫn smooth)
+DETECT_FRAME_INTERVAL = 2
+actual_detect_fps = video_fps / DETECT_FRAME_INTERVAL
+print(f"   Detection FPS: {actual_detect_fps:.1f} (mỗi {DETECT_FRAME_INTERVAL} frame)")
+print("🎬 Processing... Press 'q' to quit.\n")
 
 # ===============================
-# TIME-BASED DETECTION
+# FRAME COUNTER FOR DETECTION
 # ===============================
-CAPTURE_INTERVAL = 0.5  
-last_capture_time = 0
+frame_count = 0
 
 # ===============================
 # MAIN LOOP
@@ -89,12 +103,10 @@ while True:
     if not ret:
         break
 
-    current_time = time.time()
+    frame_count += 1
 
-
-    # Detect mỗi 1 giây
-    if current_time - last_capture_time >= CAPTURE_INTERVAL:
-        last_capture_time = current_time
+    # 📊 Detect mỗi N frame (frame-based thay vì time-based)
+    if frame_count % DETECT_FRAME_INTERVAL == 0:
 
         # ===== FACE DETECTION =====
         face_results = face_model(frame, imgsz=640, conf=0.5, verbose=False)[0]
@@ -107,12 +119,12 @@ while True:
                 continue
 
             # ===== PREPROCESS =====
-            face_resized = _imresize(face_crop, (416, 416))
+            face_resized = _imresize(face_crop, (256, 256))
             face_norm = preprocess_input(face_resized, v2=True)
             face_input = ((face_norm + 1) / 2 * 255).astype("uint8")
 
             # ===== EMOTION DETECTION =====
-            emotion_results = emotion_model(face_input, imgsz=416, conf=0.5, verbose=False)[0]
+            emotion_results = emotion_model(face_input, imgsz=256, conf=0.5, verbose=False)[0]
 
             has_emotion = False  # đánh dấu có nhãn hay không
 
@@ -137,7 +149,7 @@ while True:
                             (255, 255, 255), 2)
 
     # Show frame
-    cv2.imshow("Time-Based Emotion Detection", frame)
+    cv2.imshow("Frame-Based Emotion Detection (FPS: {:.1f})".format(actual_detect_fps), frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

@@ -9,7 +9,7 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))                 # app/s
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", ".."))  # KLCN_TH013/
 MODEL_DIR = os.path.join(PROJECT_ROOT, "DeepLearning", "models")
 
-EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "fer_YOLOv1.pt")
+EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "best.pt")
 FACE_MODEL_PATH    = os.path.join(MODEL_DIR, "face_detection.pt")
 
 # ================================

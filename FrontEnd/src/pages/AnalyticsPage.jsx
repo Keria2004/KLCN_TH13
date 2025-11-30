@@ -46,7 +46,6 @@ export default function AnalyticsPage() {
     if (sessionDataStr) {
       try {
         const sessionData = JSON.parse(sessionDataStr);
-        console.log("📊 Loaded session data from localStorage:", sessionData);
         processSessionData(sessionData);
         localStorage.removeItem("lastSessionData");
       } catch (e) {
@@ -59,10 +58,6 @@ export default function AnalyticsPage() {
     if (sessionsListStr) {
       try {
         const sessionsList = JSON.parse(sessionsListStr);
-        console.log(
-          "📚 Using updated sessions list from localStorage:",
-          sessionsList
-        );
         setData((prev) => ({
           ...prev,
           sessions: sessionsList,
@@ -82,27 +77,31 @@ export default function AnalyticsPage() {
   const processSessionData = (sessionData) => {
     if (sessionData.emotion_counts) {
       const emotions = [
-        "Vui vẻ",
-        "Buồn",
-        "Giận dữ",
-        "Ngạc nhiên",
-        "Bình thường",
-        "Ghê tởm",
-        "Sợ hãi",
+        "Happy",
+        "Sad",
+        "Angry",
+        "Surprise",
+        "Neutral",
+        "Disgust",
+        "Fear",
       ];
       const counts = emotions.map((e) => sessionData.emotion_counts[e] || 0);
       setBarData(counts);
 
-      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có count cao nhất, loại bỏ 'Bình thường'
-      let maxIdx = 0;
-      let maxCount = -1;
-      counts.forEach((count, idx) => {
-        if (emotions[idx] !== "Bình thường" && count > maxCount) {
-          maxCount = count;
-          maxIdx = idx;
-        }
-      });
-      const maxEmotion = maxCount > 0 ? emotions[maxIdx] : "Bình thường";
+      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có giá trị cao nhất
+      const dominantEmotionKey = emotions[counts.indexOf(Math.max(...counts))];
+
+      // Map từ key tiếng Anh sang tiếng Việt để hiển thị
+      const emotionMap = {
+        Happy: "Vui vẻ",
+        Sad: "Buồn",
+        Angry: "Giận dữ",
+        Surprise: "Ngạc nhiên",
+        Neutral: "Bình thường",
+        Disgust: "Ghê tởm",
+        Fear: "Sợ hãi",
+      };
+      const maxEmotion = emotionMap[dominantEmotionKey] || "Bình thường";
       setDominantEmotion(maxEmotion);
 
       const lineChartData = counts.map((_, idx) => Math.random() * 100);
@@ -273,8 +272,6 @@ export default function AnalyticsPage() {
           new Date().toISOString().split("T")[0]
         }.pdf`
       );
-
-      console.log("✅ PDF exported successfully");
     } catch (error) {
       console.error("Error exporting PDF:", error);
       alert(`Error: ${error.message}`);
@@ -522,25 +519,30 @@ export default function AnalyticsPage() {
       }
 
       const emotions = [
-        "Vui vẻ",
-        "Buồn",
-        "Giận dữ",
-        "Ngạc nhiên",
-        "Bình thường",
-        "Ghê tởm",
-        "Sợ hãi",
+        "Happy",
+        "Sad",
+        "Angry",
+        "Surprise",
+        "Neutral",
+        "Disgust",
+        "Fear",
       ];
       const counts = emotions.map((e) => emotionSummary[e] || 0);
-      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có count cao nhất, loại bỏ 'Bình thường'
-      let maxIdx = 0;
-      let maxCount = -1;
-      counts.forEach((count, idx) => {
-        if (emotions[idx] !== "Bình thường" && count > maxCount) {
-          maxCount = count;
-          maxIdx = idx;
-        }
-      });
-      const dominantEmotion = maxCount > 0 ? emotions[maxIdx] : "Bình thường";
+      // 🎭 Tính cảm xúc chủ đạo: lấy cảm xúc có giá trị cao nhất
+      const dominantEmotionKey =
+        emotions[counts.indexOf(Math.max(...counts))] || "Neutral";
+
+      // Map từ key tiếng Anh sang tiếng Việt để hiển thị
+      const emotionMap = {
+        Happy: "Vui vẻ",
+        Sad: "Buồn",
+        Angry: "Giận dữ",
+        Surprise: "Ngạc nhiên",
+        Neutral: "Bình thường",
+        Disgust: "Ghê tởm",
+        Fear: "Sợ hãi",
+      };
+      const dominantEmotion = emotionMap[dominantEmotionKey] || "Bình thường";
 
       const totalCount = counts.reduce((a, b) => a + b, 0) || 1;
       const positiveCount =

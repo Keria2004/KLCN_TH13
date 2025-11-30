@@ -91,7 +91,6 @@ export default function HomePage() {
   };
 
   const handleContinue = (cls) => {
-    console.log("Continue class", cls);
     window.location.href = "/monitor";
   };
 

@@ -14,6 +14,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=True, index=True)  # Username tùy chọn
     full_name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)

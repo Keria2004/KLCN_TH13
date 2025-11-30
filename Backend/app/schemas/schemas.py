@@ -155,6 +155,7 @@ class LoginResponse(BaseModel):
 
 class RegisterRequest(BaseModel):
     full_name: str
+    username: Optional[str] = None  # Username tùy chọn
     email: str
     password: str
     role: str = "teacher"

@@ -15,7 +15,7 @@ from utils.preprocessor import preprocess_input, _imresize
 MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
 
 FACE_MODEL_PATH = os.path.join(MODEL_DIR, "face_detection.pt")
-EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "fer_YOLOv2.pt")
+EMOTION_MODEL_PATH = os.path.join(MODEL_DIR, "best.pt")
 
 print("Using face model:", FACE_MODEL_PATH)
 print("Using emotion model:", EMOTION_MODEL_PATH)
@@ -48,8 +48,14 @@ if not cap.isOpened():
     print("❌ Không mở được webcam")
     exit()
 
-print("✅ Webcam đã mở. Bấm 'q' để thoát.")
+# 📊 Lấy thông tin webcam
+webcam_fps = cap.get(cv2.CAP_PROP_FPS)
+if webcam_fps <= 0:
+    webcam_fps = 30  # Default FPS if not available
 
+print("✅ Webcam đã mở. Bấm 'q' để thoát.")
+print(f"📊 Webcam FPS: {webcam_fps}")
+print("🎯 Detection mode: CONTINUOUS (liên tục)\n")
 
 # ===============================
 # VÒNG LẶP CHÍNH
@@ -67,64 +73,64 @@ while True:
 
     # DUYỆT TỪNG KHUÔN MẶT
     for box in face_results.boxes:
-        x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
+            x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
 
-        # Crop face
-        face_crop = resized_frame[y1:y2, x1:x2]
-        if face_crop.size == 0:
-            continue
+            # Crop face
+            face_crop = resized_frame[y1:y2, x1:x2]
+            if face_crop.size == 0:
+                continue
 
-        # PREPROCESS
-        face_resized = _imresize(face_crop, (416, 416))
-        face_norm = preprocess_input(face_resized, v2=True)
-        face_norm = ((face_norm + 1) / 2 * 255).astype("uint8")
+            # PREPROCESS
+            face_resized = _imresize(face_crop, (256, 256))
+            face_norm = preprocess_input(face_resized, v2=True)
+            face_norm = ((face_norm + 1) / 2 * 255).astype("uint8")
 
-        # NHẬN DIỆN CẢM XÚC
-        emotion_results = emotion_model(face_norm, imgsz=416, conf=0.5, verbose=False)[0]
+            # NHẬN DIỆN CẢM XÚC
+            emotion_results = emotion_model(face_norm, imgsz=256, conf=0.5, verbose=False)[0]
 
-        has_emotion = False   # <-- đánh dấu nếu mô hình nhận được emotion
+            has_emotion = False   # <-- đánh dấu nếu mô hình nhận được emotion
 
-        if len(emotion_results.boxes) > 0:
-            best_box = emotion_results.boxes[emotion_results.boxes.conf.argmax()]
-            cls_id = int(best_box.cls)
+            if len(emotion_results.boxes) > 0:
+                best_box = emotion_results.boxes[emotion_results.boxes.conf.argmax()]
+                cls_id = int(best_box.cls)
 
-            if cls_id < len(EMOTION_LABELS):
-                emotion_label = f"{EMOTION_LABELS[cls_id]} ({float(best_box.conf):.2f})"
-                color = get_color(cls_id)
-                has_emotion = True
-        else:
-            # Không có emotion → chỉ khung trắng
-            color = (255, 255, 255)
+                if cls_id < len(EMOTION_LABELS):
+                    emotion_label = f"{EMOTION_LABELS[cls_id]} ({float(best_box.conf):.2f})"
+                    color = get_color(cls_id)
+                    has_emotion = True
+            else:
+                # Không có emotion → chỉ khung trắng
+                color = (255, 255, 255)
 
-        # ======== VẼ KHUNG ========
-        cv2.rectangle(resized_frame, (x1, y1), (x2, y2), color, 2)
+            # ======== VẼ KHUNG ========
+            cv2.rectangle(resized_frame, (x1, y1), (x2, y2), color, 2)
 
-        # Chỉ vẽ nhãn khi có emotion
-        if has_emotion:
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.7
-            thickness = 2
-            text_size = cv2.getTextSize(emotion_label, font, font_scale, thickness)[0]
+            # Chỉ vẽ nhãn khi có emotion
+            if has_emotion:
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.7
+                thickness = 2
+                text_size = cv2.getTextSize(emotion_label, font, font_scale, thickness)[0]
 
-            # Vẽ background label
-            cv2.rectangle(
-                resized_frame,
-                (x1, y1 - text_size[1] - 10),
-                (x1 + text_size[0] + 10, y1),
-                color,
-                -1,
-            )
+                # Vẽ background label
+                cv2.rectangle(
+                    resized_frame,
+                    (x1, y1 - text_size[1] - 10),
+                    (x1 + text_size[0] + 10, y1),
+                    color,
+                    -1,
+                )
 
-            # Vẽ chữ
-            cv2.putText(
-                resized_frame,
-                emotion_label,
-                (x1 + 5, y1 - 5),
-                font,
-                font_scale,
-                (255, 255, 255),
-                thickness,
-            )
+                # Vẽ chữ
+                cv2.putText(
+                    resized_frame,
+                    emotion_label,
+                    (x1 + 5, y1 - 5),
+                    font,
+                    font_scale,
+                    (255, 255, 255),
+                    thickness,
+                )
 
     # ======== SHOW ========
     cv2.imshow("Emotion Detection YOLO", resized_frame)

@@ -11,6 +11,12 @@ router = APIRouter(prefix="/register", tags=["Auth"])
 @router.post("/", response_model=RegisterResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
+    # Kiểm tra username đã tồn tại chưa (nếu có)
+    if payload.username:
+        existing_username = db.query(User).filter(User.username == payload.username).first()
+        if existing_username:
+            raise HTTPException(status_code=400, detail="Username already exists")
+
     # Kiểm tra email đã tồn tại chưa
     existing_user = db.query(User).filter(User.email == payload.email).first()
     if existing_user:
@@ -18,6 +24,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
     # Tạo user
     new_user = User(
+        username=payload.username,  # Có thể None
         full_name=payload.full_name,
         email=payload.email,
         password_hash=payload.password, 
