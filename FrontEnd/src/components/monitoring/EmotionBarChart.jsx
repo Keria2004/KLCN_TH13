@@ -1,117 +1,129 @@
 // src/components/monitoring/EmotionBarChart.jsx
 import { useEffect, useRef } from "react";
-import Chart from "chart.js/auto";
-
-const DEFAULT_LABELS = [
-  "Vui vẻ",
-  "Buồn",
-  "Giận dữ",
-  "Ngạc nhiên",
-  "Bình thường",
-  "Ghê tởm",
-  "Sợ hãi",
-];
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const EMOTION_COLORS = {
-  "Vui vẻ": "rgba(40, 167, 69, 0.7)",
-  Buồn: "rgba(0, 123, 255, 0.7)",
-  "Giận dữ": "rgba(220, 53, 69, 0.7)",
-  "Ngạc nhiên": "rgba(255, 193, 7, 0.7)",
-  "Bình thường": "rgba(108, 117, 125, 0.7)",
-  "Ghê tởm": "rgba(232, 62, 140, 0.7)",
-  "Sợ hãi": "rgba(253, 126, 20, 0.7)",
-  Happy: "rgba(40, 167, 69, 0.7)",
-  Sad: "rgba(0, 123, 255, 0.7)",
-  Angry: "rgba(220, 53, 69, 0.7)",
-  Surprise: "rgba(255, 193, 7, 0.7)",
-  Neutral: "rgba(108, 117, 125, 0.7)",
-  Disgust: "rgba(232, 62, 140, 0.7)",
-  Fear: "rgba(253, 126, 20, 0.7)",
+  "Vui vẻ": "#28a745",
+  Buồn: "#007bff",
+  "Giận dữ": "#dc3545",
+  "Ngạc nhiên": "#ffc107",
+  "Bình thường": "#6c757d",
+  "Ghê tởm": "#e83e8c",
+  "Sợ hãi": "#fd7e14",
+  Happy: "#28a745",
+  Sad: "#007bff",
+  Angry: "#dc3545",
+  Surprise: "#ffc107",
+  Neutral: "#6c757d",
+  Disgust: "#e83e8c",
+  Fear: "#fd7e14",
 };
 
 export default function EmotionBarChart({ data = [], emotionCounts = {} }) {
-  const canvasRef = useRef(null);
-  const chartRef = useRef(null);
+  // Handle both array and object formats
+  let chartData = [];
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  if (typeof emotionCounts === "object" && !Array.isArray(emotionCounts)) {
+    // New format: emotionCounts object
+    chartData = Object.entries(emotionCounts)
+      .filter(([_, value]) => value > 0)
+      .map(([emotion, value]) => ({
+        name: emotion,
+        value: value,
+        color: EMOTION_COLORS[emotion] || "#0d6efd",
+      }));
+  } else if (Array.isArray(data) && data.length > 0) {
+    // Legacy format: array
+    const labels = [
+      "Happy",
+      "Sad",
+      "Angry",
+      "Surprise",
+      "Neutral",
+      "Disgust",
+      "Fear",
+    ];
+    chartData = labels
+      .filter((_, idx) => data[idx] > 0)
+      .map((emotion, idx) => ({
+        name: emotion,
+        value: data[idx],
+        color: EMOTION_COLORS[emotion] || "#0d6efd",
+      }));
+  }
 
-    if (chartRef.current) {
-      chartRef.current.destroy();
-    }
+  // Calculate total for percentage
+  const total = chartData.reduce((sum, item) => sum + item.value, 0) || 1;
 
-    const ctx = canvasRef.current.getContext("2d");
+  // If no data, show placeholder
+  if (chartData.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "300px",
+          color: "#6c757d",
+          fontSize: "14px",
+        }}
+      >
+        <i
+          className="fas fa-chart-pie"
+          style={{ marginRight: "10px", fontSize: "24px" }}
+        ></i>
+        Chưa có dữ liệu cảm xúc
+      </div>
+    );
+  }
 
-    // Handle both array and object formats
-    let labels, datasetData, colors;
-
-    if (typeof emotionCounts === "object" && !Array.isArray(emotionCounts)) {
-      // New format: emotionCounts object
-      labels = Object.keys(emotionCounts);
-      datasetData = Object.values(emotionCounts);
-      colors = labels.map(
-        (emotion) => EMOTION_COLORS[emotion] || "rgba(13, 110, 253, 0.7)"
-      );
-    } else if (Array.isArray(data) && data.length > 0) {
-      // Legacy format: array
-      labels = DEFAULT_LABELS;
-      datasetData =
-        data && data.length === labels.length
-          ? data
-          : labels.map((_, idx) => data[idx] ?? 0);
-      colors = labels.map(
-        (emotion) => EMOTION_COLORS[emotion] || "rgba(13, 110, 253, 0.7)"
-      );
-    } else {
-      // Empty state
-      labels = DEFAULT_LABELS;
-      datasetData = labels.map(() => 0);
-      colors = labels.map(
-        (emotion) => EMOTION_COLORS[emotion] || "rgba(13, 110, 253, 0.7)"
-      );
-    }
-
-    chartRef.current = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Số Lần Cảm Xúc",
-            data: datasetData,
-            backgroundColor: colors,
-            borderColor: colors.map((c) => c.replace("0.7", "1")),
-            borderWidth: 2,
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            display: true,
-            position: "top",
-          },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-            },
-          },
-        },
-      },
-    });
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy();
-      }
-    };
-  }, [data, emotionCounts]);
-
-  return <canvas ref={canvasRef} style={{ maxHeight: "250px" }} />;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          label={({ name, value }) => {
+            const percent = ((value / total) * 100).toFixed(1);
+            return `${name}: ${percent}%`;
+          }}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+        >
+          {chartData.map((item, index) => (
+            <Cell key={`cell-${index}`} fill={item.color} />
+          ))}
+        </Pie>
+        <Tooltip
+          formatter={(value) => {
+            const percent = ((value / total) * 100).toFixed(1);
+            return [`${value} frame (${percent}%)`, "Số lần"];
+          }}
+          contentStyle={{
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            border: "none",
+            borderRadius: "8px",
+            color: "white",
+          }}
+        />
+        <Legend
+          wrapperStyle={{ paddingTop: "20px" }}
+          formatter={(value) => {
+            const item = chartData.find((d) => d.name === value);
+            return `${value}`;
+          }}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  );
 }

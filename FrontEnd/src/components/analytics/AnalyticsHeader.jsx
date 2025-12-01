@@ -1,25 +1,24 @@
-import "../../styles/analytics/AnalyticsHeader.css";
+import React from "react";
 
+/**
+ * Header banner cho Analytics page
+ */
 export default function AnalyticsHeader() {
   return (
-    <div className="analytics-header">
-      <h2 className="analytics-title">Emotion Analytics Dashboard</h2>
-
-      <div className="analytics-filters">
-        <select>
-          <option>Math</option>
-          <option>Physics</option>
-          <option>English</option>
-        </select>
-
-        <select>
-          <option>Class 10A1</option>
-          <option>Class 10A2</option>
-        </select>
-
-        <input type="date" />
-
-        <button className="download-btn">Download Report</button>
+    <div
+      style={{
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+        padding: "40px 20px",
+      }}
+    >
+      <div className="container">
+        <h1 className="display-6 fw-bold mb-2">
+          <i className="fas fa-chart-line me-2"></i>Phân Tích & Báo Cáo Cảm Xúc
+        </h1>
+        <p className="lead mb-0" style={{ opacity: 0.9 }}>
+          Thống kê chi tiết và báo cáo về cảm xúc lớp học
+        </p>
       </div>
     </div>
   );

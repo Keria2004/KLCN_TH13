@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 
@@ -8,15 +8,19 @@ from app.schemas.schemas import LoginRequest, LoginResponse
 router = APIRouter(prefix="/login", tags=["Auth"])
 
 
+@router.options("/")
+async def login_options():
+    """Handle CORS preflight request"""
+    return Response(status_code=200)
+
+
 @router.post("/", response_model=LoginResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    """Đăng nhập bằng username hoặc email"""
-    # Tìm người dùng theo username hoặc email
+    """Đăng nhập bằng email"""
+    # Tìm người dùng theo email (username có thể không tồn tại trong DB)
     user = (
         db.query(User)
-        .filter(
-            (User.username == payload.username) | (User.email == payload.username)
-        )
+        .filter(User.email == payload.username)
         .first()
     )
 
@@ -32,7 +36,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     return LoginResponse(
         id=user.id,
-        full_name=user.full_name,
+        full_name=user.full_name or "User",
         email=user.email,
         role=user.role,
         token=token

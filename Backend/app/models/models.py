@@ -14,8 +14,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(BigInteger, primary_key=True, index=True)
-    username = Column(String, unique=True, nullable=True, index=True)  # Username tùy chọn
-    full_name = Column(String, nullable=False)
+    # username column removed - doesn't exist in actual database
+    full_name = Column(String, nullable=True, default="User")
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False, index=True)  # teacher, admin, student
@@ -44,9 +44,9 @@ class Session(Base):
     teacher_id = Column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     subject = Column(String, nullable=False)
 
-    status = Column(String, default="active")  # active, ended
+    status = Column(String, default="active", server_default="active")  # active, ended
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    started_at = Column(DateTime(timezone=True), nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True, server_default=func.now())
     ended_at = Column(DateTime(timezone=True), nullable=True)
 
     # Summary
@@ -55,6 +55,7 @@ class Session(Base):
     dominant_emotion = Column(String, nullable=True)
     positive_rate = Column(Float, default=0.0)
     emotion_summary = Column(Text, nullable=True)  # JSON string with emotion counts
+    video_path = Column(Text, nullable=True)  # 🎥 Đường dẫn video buổi học
 
     notes = Column(Text, nullable=True)
 

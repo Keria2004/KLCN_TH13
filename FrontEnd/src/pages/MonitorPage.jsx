@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import LiveMonitoring from "../components/monitoring/LiveMonitoring";
 import VideoUpload from "../components/monitoring/VideoUpload";
 import EmotionBarBox from "../components/monitoring/EmotionBarBox";
@@ -22,6 +22,22 @@ const MonitorPage = () => {
       (data[1] || 0) + (data[2] || 0) + (data[5] || 0) + (data[6] || 0);
     return Math.round((boredEmotions / total) * 100);
   };
+
+  // Wrap emotion update in useCallback to avoid setState during render
+  const handleEmotionUpdate = useCallback((data, emotion, emotionStats) => {
+    setEmotionData(data);
+    setCurrentEmotion(emotion);
+    setStats(emotionStats);
+
+    // 🔔 Kiểm tra tỷ lệ chán nản
+    const newBoredRate = calculateBoredRate(data);
+    setBoredRate(newBoredRate);
+    if (newBoredRate >= 40) {
+      setShowAlert(true);
+    } else {
+      setShowAlert(false);
+    }
+  }, []);
 
   return (
     <div className="min-vh-100" style={{ background: "#f8f9fa" }}>
@@ -187,22 +203,7 @@ const MonitorPage = () => {
                     </h5>
                   </div>
                   <div className="card-body">
-                    <LiveMonitoring
-                      onEmotionUpdate={(data, emotion, stats) => {
-                        setEmotionData(data);
-                        setCurrentEmotion(emotion);
-                        setStats(stats);
-
-                        // 🔔 Kiểm tra tỷ lệ chán nản
-                        const newBoredRate = calculateBoredRate(data);
-                        setBoredRate(newBoredRate);
-                        if (newBoredRate >= 40) {
-                          setShowAlert(true);
-                        } else {
-                          setShowAlert(false);
-                        }
-                      }}
-                    />
+                    <LiveMonitoring onEmotionUpdate={handleEmotionUpdate} />
                   </div>
                 </div>
               </div>
@@ -231,22 +232,7 @@ const MonitorPage = () => {
                     </h5>
                   </div>
                   <div className="card-body">
-                    <VideoUpload
-                      onEmotionUpdate={(data, emotion, stats) => {
-                        setEmotionData(data);
-                        setCurrentEmotion(emotion);
-                        setStats(stats);
-
-                        // 🔔 Kiểm tra tỷ lệ chán nản
-                        const newBoredRate = calculateBoredRate(data);
-                        setBoredRate(newBoredRate);
-                        if (newBoredRate >= 40) {
-                          setShowAlert(true);
-                        } else {
-                          setShowAlert(false);
-                        }
-                      }}
-                    />
+                    <VideoUpload onEmotionUpdate={handleEmotionUpdate} />
                   </div>
                 </div>
               </div>

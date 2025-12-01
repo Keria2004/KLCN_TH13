@@ -25,7 +25,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     # Tạo user
     new_user = User(
         username=payload.username,  # Có thể None
-        full_name=payload.full_name,
+        full_name="User",  # Default value
         email=payload.email,
         password_hash=payload.password, 
         role=payload.role
@@ -37,7 +37,6 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
     return RegisterResponse(
         id=new_user.id,
-        full_name=new_user.full_name,
         email=new_user.email,
         role=new_user.role
     )

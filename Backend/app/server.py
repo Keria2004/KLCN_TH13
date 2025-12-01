@@ -10,11 +10,12 @@ logging.basicConfig(
 
 app = FastAPI()
 
+# 🔓 CORS MUST be added FIRST before other middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # hoặc ["*"] tạm thời
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],
 )
 

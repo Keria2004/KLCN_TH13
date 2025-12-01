@@ -6,7 +6,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [registerUsername, setRegisterUsername] = useState(""); // Username mới cho register
-  const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("teacher");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -89,7 +88,6 @@ export default function LoginPage() {
         setUsername(registerUsername || email);
         setPassword("");
         setEmail("");
-        setFullName("");
         setRegisterUsername("");
       }, 1500);
     } catch (err) {
@@ -333,32 +331,6 @@ export default function LoginPage() {
                 {/* REGISTER TAB */}
                 {activeTab === "register" && (
                   <form onSubmit={handleRegister}>
-                    <div className="mb-4">
-                      <label className="form-label fw-semibold text-dark">
-                        Họ và Tên
-                      </label>
-                      <div
-                        className="input-group"
-                        style={{ borderRadius: "8px", overflow: "hidden" }}
-                      >
-                        <span
-                          className="input-group-text bg-light border-0"
-                          style={{ color: "#667eea" }}
-                        >
-                          <i className="fas fa-user"></i>
-                        </span>
-                        <input
-                          type="text"
-                          className="form-control border-0"
-                          required
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          placeholder="Nhập họ và tên..."
-                          style={{ background: "#f8f9fa" }}
-                        />
-                      </div>
-                    </div>
-
                     <div className="mb-4">
                       <label className="form-label fw-semibold text-dark">
                         Tên Đăng Nhập (Tùy Chọn)

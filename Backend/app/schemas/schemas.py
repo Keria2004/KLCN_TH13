@@ -74,6 +74,7 @@ class SessionEndRequest(BaseModel):
     subject: Optional[str] = None  # Optional subject
     emotion_counts: Dict[str, int]
     timeline: List[Dict[str, Any]]
+    video_data: Optional[str] = None  # 🎥 Base64 encoded video hoặc video URL
 
 
 class SessionEndResponse(BaseModel):
@@ -154,7 +155,6 @@ class LoginResponse(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    full_name: str
     username: Optional[str] = None  # Username tùy chọn
     email: str
     password: str
@@ -163,7 +163,6 @@ class RegisterRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     id: int
-    full_name: str
     email: str
     role: str
 
